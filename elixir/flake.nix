@@ -35,38 +35,42 @@
           # documentation
           # https://nixos.org/manual/nixpkgs/stable/#sec-beam
 
-          # ==== ERLANG ====
-
-          # use whatever version is currently defined in nixpkgs
-          # erlang = pkgs.beam.interpreters.erlang;
-
-          # use latest version of Erlang 28
-          erlang = final.beam.interpreters.erlang_28;
-
-          # specify exact version of Erlang OTP
-          # erlang = pkgs.beam.interpreters.erlang.override {
-          #   version = "26.2.2";
-          #   sha256 = "sha256-7S+mC4pDcbXyhW2r5y8+VcX9JQXq5iEUJZiFmgVMPZ0=";
-          # }
-
           # ==== BEAM packages ====
 
-          # all BEAM packages will be compile with your preferred erlang version
-          pkgs-beam = final.beam.packagesWith erlang;
+          # nixpkgs provides one package set per Erlang/OTP release
+          # (beam26Packages, beam27Packages, beam28Packages, ...); every package
+          # in a set (elixir, rebar3, hex, ...) is compiled with that OTP version.
+
+          # use whatever OTP version is currently the default in nixpkgs
+          # beamPkgs = final.beamPackages;
+
+          # use latest version of Erlang/OTP 28
+          beamPkgs = final.beam28Packages;
+
+          # specify exact version of Erlang/OTP: override the erlang member of a
+          # set with overrideScope, so the rest of the set is rebuilt against it
+          # beamPkgs = final.beam28Packages.overrideScope (
+          #   beamFinal: beamPrev: {
+          #     erlang = beamPrev.erlang.override {
+          #       version = "28.0.2";
+          #       sha256 = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
+          #     };
+          #   }
+          # );
         in
         {
           # ==== Elixir ====
 
-          # use whatever version is currently defined in nixpkgs
-          # elixir = pkgs-beam.elixir;
+          # use whatever Elixir version is currently the default in the set
+          # elixir = beamPkgs.elixir;
 
           # use latest version of Elixir 1.19
-          elixir = pkgs-beam.elixir_1_19;
+          elixir = beamPkgs.elixir_1_19;
 
           # specify exact version of Elixir
-          # elixir = pkgs-beam.elixir.override {
-          #   version = "1.17.1";
-          #   sha256 = "sha256-a7A+426uuo3bUjggkglY1lqHmSbZNpjPaFpQUXYtW9k=";
+          # elixir = beamPkgs.elixir.override {
+          #   version = "1.19.0";
+          #   sha256 = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
           # };
         };
 
@@ -90,7 +94,7 @@
               ]
               ++
                 # Linux only
-                pkgs.lib.optionals pkgs.stdenv.isLinux (
+                pkgs.lib.optionals pkgs.stdenv.hostPlatform.isLinux (
                   with pkgs;
                   [
                     gigalixir
@@ -100,7 +104,7 @@
                 )
               ++
                 # macOS only
-                pkgs.lib.optionals pkgs.stdenv.isDarwin (
+                pkgs.lib.optionals pkgs.stdenv.hostPlatform.isDarwin (
                   with pkgs;
                   [
                     terminal-notifier
