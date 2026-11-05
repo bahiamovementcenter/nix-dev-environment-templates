@@ -1,6 +1,6 @@
 name: Sync with upstream
 
-# Keeps `upstream/main` as a clean mirror of the-nix-way/dev-templates and merges
+# Keeps `upstream-main` as a clean mirror of the-nix-way/dev-templates and merges
 # it into `main`, which holds our custom templates.
 #
 # If upstream changes anything under .github/workflows, the default GITHUB_TOKEN
@@ -35,8 +35,8 @@ jobs:
       - name: Fetch upstream
         run: git fetch "$UPSTREAM_REPO" main:refs/remotes/upstream/main
 
-      - name: Update the upstream/main mirror
-        run: git push origin refs/remotes/upstream/main:refs/heads/upstream/main
+      - name: Update the upstream-main mirror
+        run: git push origin refs/remotes/upstream/main:refs/heads/upstream-main
 
       - name: Merge upstream into main
         run: |
@@ -44,13 +44,13 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
           if git merge-base --is-ancestor refs/remotes/upstream/main HEAD; then
-            echo "main already contains upstream/main"
+            echo "main already contains upstream-main"
             exit 0
           fi
 
-          if ! git merge --no-ff refs/remotes/upstream/main -m "Merge upstream/main into main"; then
+          if ! git merge --no-ff refs/remotes/upstream/main -m "Merge upstream-main into main"; then
             git merge --abort
-            echo "::error::Merge conflict between upstream/main and main; resolve it manually."
+            echo "::error::Merge conflict between upstream-main and main; resolve it manually."
             exit 1
           fi
 
