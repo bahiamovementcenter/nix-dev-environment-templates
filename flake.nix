@@ -186,6 +186,11 @@
             description = "Java development environment";
           };
 
+          johnny-decimal = {
+            path = ./johnny-decimal;
+            description = "Johnny Decimal development environment";
+          };
+
           jupyter = {
             path = ./jupyter;
             description = "Jupyter development environment";
