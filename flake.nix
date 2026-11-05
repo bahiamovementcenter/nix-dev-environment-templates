@@ -116,6 +116,11 @@
         templates = {
           default = self.templates.empty;
 
+          agents = {
+            path = ./agents;
+            description = "AI coding agents development environment (llm-agents.nix, with sandboxing)";
+          };
+
           bun = {
             path = ./bun;
             description = "Bun development environment";

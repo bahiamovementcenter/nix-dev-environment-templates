@@ -38,6 +38,7 @@ Once your preferred template has been initialized, you can use the provided shel
 
 | Language/framework/tool  | Template                      |
 | :----------------------- | :---------------------------- |
+| [AI coding agents][agents] | [`agents`](./agents/)       |
 | [Bun]                    | [`bun`](./bun/)               |
 | [C] / [C++]              | [`c-cpp`](./c-cpp/)           |
 | [Clojure]                | [`clojure`](./clojure/)       |
@@ -87,6 +88,13 @@ Once your preferred template has been initialized, you can use the provided shel
 ## Template contents
 
 The sections below list what each template includes. In all cases, you're free to add and remove packages as you see fit; the templates are just boilerplate.
+
+### [`agents`](./agents/)
+
+- [Claude Code][claude-code], [Codex][codex] and [OpenCode][opencode], packaged by [llm-agents.nix]
+- [claudebox] and [sandbox-runtime] for sandboxed runs
+- [Node.js][node]
+- `AGENTS.md` starter, plus a `CLAUDE.md` that imports it
 
 ### [`bun`](./bun/)
 
@@ -353,9 +361,16 @@ A dev template that's fully customizable.
 - [LLDB]
 - [ZLS]
 
+[agents]: https://agents.md
 [boot]: https://boot-clj.com
 [buf]: https://github.com/bufbuild/buf
 [bun]: https://bun.sh
+[claude-code]: https://github.com/anthropics/claude-code
+[claudebox]: https://github.com/numtide/claudebox
+[codex]: https://github.com/openai/codex
+[llm-agents.nix]: https://github.com/numtide/llm-agents.nix
+[opencode]: https://opencode.ai
+[sandbox-runtime]: https://github.com/anthropic-experimental/sandbox-runtime
 [C]: https://open-std.org/jtc1/sc22/wg14
 [C++]: https://isocpp.org
 [cabal]: https://haskell.org/cabal
