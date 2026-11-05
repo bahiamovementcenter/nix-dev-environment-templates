@@ -54,6 +54,7 @@ Once your preferred template has been initialized, you can use the provided shel
 | [Haskell]                | [`haskell`](./haskell/)       |
 | [Haxe]                   | [`haxe`](./haxe/)             |
 | [Java]                   | [`java`](./java/)             |
+| [Johnny Decimal][jd]     | [`johnny-decimal`](./johnny-decimal/) |
 | [Jupyter]                | [`jupyter`](./jupyter/)       |
 | [Kotlin]                 | [`kotlin`](./kotlin/)         |
 | [LaTeX]                  | [`latex`](./latex/)           |
@@ -187,6 +188,11 @@ A dev template that's fully customizable.
 - [Maven]
 - [Gradle]
 - [jdtls]
+
+### [`johnny-decimal`](./johnny-decimal/)
+
+- [jd][jd-cli], the official Johnny.Decimal command-line tool
+- [jdd]
 
 ### [`jupyter`](./jupyter/)
 
@@ -403,6 +409,9 @@ A dev template that's fully customizable.
 [java]: https://java.com
 [jdtls]: https://projects.eclipse.org/projects/eclipse.jdt.ls
 [jq]: https://jqlang.github.io/jq
+[jd]: https://johnnydecimal.com
+[jd-cli]: https://github.com/johnnydecimal/cli.johnnydecimal.com
+[jdd]: https://github.com/mahyarmirrashed/jdd
 [jupyter]: https://jupyter.org
 [knitr]: https://yihui.org/knitr
 [kotlin]: https://kotlinlang.org
