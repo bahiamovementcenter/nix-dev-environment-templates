@@ -1,0 +1,57 @@
+name: Sync with upstream
+
+# Keeps `upstream/main` as a clean mirror of the-nix-way/dev-templates and merges
+# it into `main`, which holds our custom templates.
+#
+# If upstream changes anything under .github/workflows, the default GITHUB_TOKEN
+# is not allowed to push that. In that case add a personal access token with the
+# `repo` and `workflow` scopes as the repository secret SYNC_TOKEN.
+
+on:
+  schedule:
+    - cron: "17 6 * * *" # daily, 06:17 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-upstream
+  cancel-in-progress: false
+
+env:
+  UPSTREAM_REPO: https://github.com/the-nix-way/dev-templates.git
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+          token: ${{ secrets.SYNC_TOKEN || github.token }}
+
+      - name: Fetch upstream
+        run: git fetch "$UPSTREAM_REPO" main:refs/remotes/upstream/main
+
+      - name: Update the upstream/main mirror
+        run: git push origin refs/remotes/upstream/main:refs/heads/upstream/main
+
+      - name: Merge upstream into main
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          if git merge-base --is-ancestor refs/remotes/upstream/main HEAD; then
+            echo "main already contains upstream/main"
+            exit 0
+          fi
+
+          if ! git merge --no-ff refs/remotes/upstream/main -m "Merge upstream/main into main"; then
+            git merge --abort
+            echo "::error::Merge conflict between upstream/main and main; resolve it manually."
+            exit 1
+          fi
+
+          git push origin HEAD:main
