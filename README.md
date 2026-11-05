@@ -191,6 +191,7 @@ A dev template that's fully customizable.
 
 ### [`johnny-decimal`](./johnny-decimal/)
 
+- [jd][jd-cli], the official Johnny.Decimal command-line tool
 - [jdd]
 
 ### [`jupyter`](./jupyter/)
@@ -409,6 +410,7 @@ A dev template that's fully customizable.
 [jdtls]: https://projects.eclipse.org/projects/eclipse.jdt.ls
 [jq]: https://jqlang.github.io/jq
 [jd]: https://johnnydecimal.com
+[jd-cli]: https://github.com/johnnydecimal/cli.johnnydecimal.com
 [jdd]: https://github.com/mahyarmirrashed/jdd
 [jupyter]: https://jupyter.org
 [knitr]: https://yihui.org/knitr

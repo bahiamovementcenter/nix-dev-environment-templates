@@ -3,10 +3,6 @@
 
   inputs.nixpkgs.url = "https://flakehub.com/f/NixOS/nixpkgs/0.1"; # unstable Nixpkgs
 
-  # Optional: zsh helpers (jcd, jcp, jmv, jmkarea, jmkcat, jmkuni, jwd).
-  # Uncomment this input and the matching lines in the shellHook below.
-  # inputs.zsh-johnnydecimal.url = "github:CRTified/zsh-johnnydecimal";
-
   outputs =
     { self, ... }@inputs:
 
@@ -31,25 +27,63 @@
     {
       devShells = forEachSupportedSystem (
         { pkgs, system }:
+        let
+          # The official Johnny.Decimal command-line tool (jd). It isn't packaged
+          # in Nixpkgs, so it's fetched at a pinned revision and wrapped so that
+          # jq is always on its PATH.
+          jd = pkgs.stdenvNoCC.mkDerivation {
+            pname = "jd";
+            version = "4.4.0";
+
+            src = pkgs.fetchFromGitHub {
+              owner = "johnnydecimal";
+              repo = "cli.johnnydecimal.com";
+              rev = "863d2e6412b70c385db8bdbcd6e1b3e28e6048f4";
+              hash = "sha256-jM0nlEJACeE+5Ojluwpd4Hwkfyvn1Ppnzhqc85PFqtA=";
+            };
+
+            nativeBuildInputs = [ pkgs.makeWrapper ];
+
+            dontBuild = true;
+
+            installPhase = ''
+              runHook preInstall
+
+              mkdir -p $out/share/johnnydecimal $out/bin
+              cp -r . $out/share/johnnydecimal/cli
+
+              makeWrapper $out/share/johnnydecimal/cli/bin/jd $out/bin/jd \
+                --prefix PATH : ${pkgs.lib.makeBinPath [ pkgs.jq ]}
+
+              runHook postInstall
+            '';
+
+            meta = {
+              description = "The Johnny.Decimal command-line tool";
+              homepage = "https://github.com/johnnydecimal/cli.johnnydecimal.com";
+              license = pkgs.lib.licenses.mit;
+              mainProgram = "jd";
+            };
+          };
+        in
         {
           default = pkgs.mkShellNoCC {
-            packages = with pkgs; [
-              jdd # Johnny Decimal daemon: files new documents into the right folder by name
+            packages = [
+              jd # Johnny.Decimal CLI: find, create and move IDs
+              pkgs.jdd # Johnny Decimal daemon: files new documents into the right folder by name
               self.formatter.${system}
             ];
 
-            # jdd can be configured through environment variables or a .jd.yaml
-            # file; JDD_ROOT is the directory the daemon watches.
+            # jd reads its config from JD_CONFIG, and jdd from the JDD_* variables.
+            # The config file isn't included: create it with `jd agent-setup` or
+            # by copying the example (`jd paths` shows where the files live).
             env = {
               JDD_LOG_LEVEL = "info";
             };
 
             shellHook = ''
+              export JD_CONFIG="''${JD_CONFIG:-$PWD/.jd/config.json}"
               export JDD_ROOT="''${JDD_ROOT:-$PWD}"
-
-              # Optional zsh helpers (requires the zsh-johnnydecimal input above):
-              # export JOHNNYDECIMAL_BASE="$JDD_ROOT"
-              # exec ${pkgs.zsh}/bin/zsh -c "source ${inputs.zsh-johnnydecimal}/johnnydecimal.zsh; exec zsh -i"
             '';
           };
         }
