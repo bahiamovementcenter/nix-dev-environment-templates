@@ -242,6 +242,21 @@ Everything gstack writes stays in the project and out of git (`.claude/skills/`,
 - [damon]
 - [Terragrunt]
 - [tflint]
+- [Tf-Ncl], [Nickel] and [nls], for writing Terraform configurations in Nickel, checked against contracts for the providers you select in `flake.nix`:
+  - `link-schema` links the contracts into the project as `tf-ncl-schema.ncl`, for `main.ncl` to import
+  - `run-nickel` evaluates `main.ncl` into `main.tf.json`
+  - `run-terraform …` runs `run-nickel`, then Terraform with those arguments
+
+  A minimal `main.ncl`, with `hashicorp_null` selected:
+
+  ```nickel
+  let Tf = import "./tf-ncl-schema.ncl" in
+  {
+    config.resource.null_resource.hello.provisioner.local-exec = [
+      { command = "echo 'Hello from Nickel'" },
+    ],
+  } | Tf.Config
+  ```
 
 ### [`haskell`](./haskell/)
 
@@ -525,6 +540,7 @@ Everything gstack writes stays in the project and out of git (`.claude/skills/`,
 [nix-ld]: https://github.com/nix-community/nix-ld
 [nixfmt]: https://github.com/serokell/nixfmt
 [nix-direnv]: https://github.com/nix-community/nix-direnv
+[nls]: https://github.com/nickel-lang/nickel/tree/master/lsp
 [node]: https://nodejs.org
 [node2nix]: https://github.com/svanderburg/node2nix
 [nomad]: https://nomadproject.io
@@ -568,6 +584,7 @@ Everything gstack writes stays in the project and out of git (`.claude/skills/`,
 [terragrunt]: https://terragrunt.gruntwork.io
 [texlab]: https://github.com/latex-lsp/texlab
 [texlive]: https://tug.org/texlive
+[tf-ncl]: https://github.com/nickel-lang/tf-ncl
 [tflint]: https://github.com/terraform-linters/tflint
 [tinymist]: https://github.com/Myriad-Dreamin/tinymist
 [typix]: https://github.com/loqusion/typix
