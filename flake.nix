@@ -30,8 +30,10 @@
           default =
             let
               getSystem = "SYSTEM=$(nix eval --impure --raw --expr 'builtins.currentSystem')";
+              # Directories without a flake.nix (like organist/) are skipped
               forEachDir = exec: ''
                 for dir in */; do
+                  [ -f "''${dir}flake.nix" ] || continue
                   (
                     cd "''${dir}"
 
@@ -70,6 +72,11 @@
                 '')
                 (script "check-formatting" [ nixfmt ] ''
                   git ls-files '*.nix' | xargs nixfmt --check
+                '')
+                # Compares each Organist template with the template it was ported
+                # from; see organist/parity.py
+                (script "check-organist" [ python3 ] ''
+                  python3 "$(git rev-parse --show-toplevel)/organist/parity.py" "$@"
                 '')
 
                 self.formatter.${system}
@@ -244,6 +251,26 @@
           opa = {
             path = ./opa;
             description = "Open Policy Agent development environment";
+          };
+
+          organist-elixir = {
+            path = ./organist/elixir;
+            description = "Elixir development environment, defined with Organist";
+          };
+
+          organist-java = {
+            path = ./organist/java;
+            description = "Java development environment, defined with Organist";
+          };
+
+          organist-nickel = {
+            path = ./organist/nickel;
+            description = "Nickel development environment, defined with Organist";
+          };
+
+          organist-python = {
+            path = ./organist/python;
+            description = "Python development environment, defined with Organist";
           };
 
           php = {

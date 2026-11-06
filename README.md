@@ -84,6 +84,28 @@ Once your preferred template has been initialized, you can use the provided shel
 | [Vlang]                  | [`vlang`](./vlang/)           |
 | [Zig]                    | [`zig`](./zig/)               |
 
+## Organist templates
+
+The [`organist`](./organist/) directory has versions of four templates defined with [Organist], which describes the development shell in [Nickel] (`project.ncl`) instead of Nix:
+
+| Language/framework/tool | Template                                     | Ported from               |
+| :---------------------- | :------------------------------------------- | :------------------------ |
+| [Elixir]                | [`organist-elixir`](./organist/elixir/)      | [`elixir`](./elixir/)     |
+| [Java]                  | [`organist-java`](./organist/java/)          | [`java`](./java/)         |
+| [Nickel]                | [`organist-nickel`](./organist/nickel/)      | [`nickel`](./nickel/)     |
+| [Python]                | [`organist-python`](./organist/python/)      | [`python`](./python/)     |
+
+They're initialized the same way (for example `nix flake init -t github:bahiamovementcenter/nix-dev-environment-templates#organist-java`; they aren't in the upstream repo) and give the same shell as the template they were ported from, plus [Nickel] and its language server for editing `project.ncl`.
+
+Organist evaluates `project.ncl` with [import from derivation][ifd], so `nix flake check --all-systems` can't evaluate these templates for other systems from a single machine. They're left out of the `build` and `check` scripts, and checked by `check-organist` instead, which compares each one with its original on the current system:
+
+```shell
+nix develop --command check-organist          # all templates
+nix develop --command check-organist java     # just one
+```
+
+It evaluates both shells against the Nixpkgs revision locked in this repo's `flake.lock` and compares which package provides each command, the shell's variables and functions, and the output of a few commands run in both shells. The commands, and any intended differences, are listed in [`organist/parity.json`](./organist/parity.json).
+
 ## Template contents
 
 The sections below list what each template includes. In all cases, you're free to add and remove packages as you see fit; the templates are just boilerplate.
@@ -406,6 +428,7 @@ A dev template that's fully customizable.
 [haskell]: https://haskell.org
 [haxe]: https://haxe.org
 [iex]: https://hexdocs.pm/iex/IEx.html
+[ifd]: https://nix.dev/manual/nix/stable/language/import-from-derivation
 [java]: https://java.com
 [jdtls]: https://projects.eclipse.org/projects/eclipse.jdt.ls
 [jq]: https://jqlang.github.io/jq
@@ -443,6 +466,7 @@ A dev template that's fully customizable.
 [odoc]: https://github.com/ocaml/odoc
 [odin]: https://github.com/odin-lang/Odin
 [opa]: https://openpolicyagent.org
+[organist]: https://github.com/nickel-lang/organist
 [pandoc]: https://pandoc.org
 [packer]: https://packer.io
 [pip]: https://pypi.org/project/pip
