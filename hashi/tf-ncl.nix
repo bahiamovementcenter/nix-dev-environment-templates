@@ -11,36 +11,10 @@
 let
   inherit (pkgs) lib;
 
-  version = "0-unstable-2026-02-03";
-
-  # Neither tool is in Nixpkgs, released or tagged, so they're built from a
-  # pinned commit
-  src = pkgs.fetchFromGitHub {
-    owner = "nickel-lang";
-    repo = "tf-ncl";
-    rev = "53f3c469d6c40b8bbff92ddb6f48cc5249af75fd";
-    hash = "sha256-CKWiknhAFv3gk/CTb4Mv3vxvONftfMe8jlNmmv+HdJQ=";
-  };
-
-  # Turns merged provider schemas into a Nickel contract
-  tf-ncl = pkgs.rustPlatform.buildRustPackage {
-    pname = "tf-ncl";
-    inherit version src;
-    cargoHash = "sha256-J0ZOW5EKzdjqa3rRCxmpbwCAHRxQTEcn6ffRksUp+hk=";
-    # Upstream's CI runs the tests; the shell only needs the binary
-    doCheck = false;
-    meta.mainProgram = "tf-ncl";
-  };
-
-  # Merges the schemas Terraform reports for each provider with Terraform's
-  # own configuration schema
-  schema-merge = pkgs.buildGoModule {
-    pname = "schema-merge";
-    inherit version;
-    src = "${src}/schema-merge";
-    vendorHash = "sha256-JWHyBLu5hqO+ed2SwdmLabwbPeKAM30UirfksI3aSPc=";
-    meta.mainProgram = "schema-merge";
-  };
+  # Not in Nixpkgs. The files in pkgs/ are copies of the ones in the
+  # dev-templates repository, which checks that they stay identical.
+  tf-ncl = pkgs.callPackage ./pkgs/tf-ncl.nix { };
+  schema-merge = pkgs.callPackage ./pkgs/schema-merge.nix { };
 
   selected = providers pkgs.terraform-providers.actualProviders;
 

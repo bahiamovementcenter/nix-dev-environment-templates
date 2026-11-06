@@ -142,7 +142,7 @@ It evaluates both shells against the Nixpkgs revision locked in this repo's `fla
 
 ## Packages that aren't in Nixpkgs
 
-Some templates need tools Nixpkgs doesn't have (`jd`, `jdexmd`, `wattlebird-generator`, `json-schema-to-nickel`). Each is defined once in [`pkgs/`](./pkgs/) and exported by this repo's flake, so you can use them without a template:
+Some templates need tools Nixpkgs doesn't have (`jd`, `jdexmd`, `wattlebird-generator`, `json-schema-to-nickel`, `tf-ncl`, `schema-merge`). Each is defined once in [`pkgs/`](./pkgs/) and exported by this repo's flake, so you can use them without a template:
 
 ```shell
 nix run github:bahiamovementcenter/nix-dev-environment-templates#json-schema-to-nickel -- schema.json
