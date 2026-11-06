@@ -417,7 +417,11 @@ Everything gstack writes stays in the project and out of git (`.claude/skills/`,
 
 ### [`typst`](./typst/)
 
-- [Typst]
+- [Typst], with [Tinymist] and [typstyle]
+- [Typix], which compiles `main.typ` with Nix, using the fonts and files listed in `flake.nix`:
+  - `nix run .#build` writes `main.pdf` (or the path given)
+  - `nix run .#watch` recompiles it whenever its sources change
+  - `nix build` builds it into `result`
 
 ### [`vlang`](./vlang/)
 
@@ -563,7 +567,10 @@ Everything gstack writes stays in the project and out of git (`.claude/skills/`,
 [texlab]: https://github.com/latex-lsp/texlab
 [texlive]: https://tug.org/texlive
 [tflint]: https://github.com/terraform-linters/tflint
+[tinymist]: https://github.com/Myriad-Dreamin/tinymist
+[typix]: https://github.com/loqusion/typix
 [typst]: https://typst.app
+[typstyle]: https://github.com/typstyle-rs/typstyle
 [vault]: https://vaultproject.io
 [vcpkg]: https://vcpkg.io
 [vcpkg-tool]: https://github.com/microsoft/vcpkg-tool
