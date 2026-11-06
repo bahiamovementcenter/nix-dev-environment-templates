@@ -15,6 +15,7 @@ concurrency:
 
 jobs:
   check:
+    name: Lockfile and formatting
     runs-on: ubuntu-latest
     permissions:
       id-token: write
@@ -28,11 +29,86 @@ jobs:
       - uses: DeterminateSystems/flakehub-cache-action@main
       - name: Check formatting
         run: nix develop --command check-formatting
+
+  # Checking a template builds its whole dev shell, so pull requests check
+  # only the templates they change; pushes and manual runs check them all
+  changes:
+    name: Find templates to check
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      templates: ${{ steps.find.outputs.templates }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - id: find
+        env:
+          EVENT: ${{ github.event_name }}
+          BASE: ${{ github.event.pull_request.base.sha }}
+        run: |
+          all_templates() {
+            for dir in */; do
+              if [ -f "${dir}flake.nix" ]; then
+                printf '%s\n' "${dir%/}"
+              fi
+            done
+          }
+
+          if [ "$EVENT" != pull_request ]; then
+            templates="$(all_templates)"
+          else
+            changed="$(git diff --name-only "$BASE...HEAD")"
+            if grep -qx '\.github/workflows/ci\.yml' <<<"$changed"; then
+              # A change to this workflow is tested on every template
+              templates="$(all_templates)"
+            else
+              templates="$(cut -d / -f 1 <<<"$changed" | sort -u | while read -r dir; do
+                if [ -f "$dir/flake.nix" ]; then
+                  printf '%s\n' "$dir"
+                fi
+              done)"
+              # The root flake.nix holds the check script (and the template
+              # list every new template edits), so a change there runs the
+              # script on the smallest template too. The root flake.lock
+              # needs nothing: templates resolve their own Nixpkgs.
+              if grep -qx 'flake\.nix' <<<"$changed"; then
+                templates="$(printf '%s\nempty\n' "$templates" | sort -u)"
+              fi
+            fi
+          fi
+
+          echo "Templates to check: $(tr '\n' ' ' <<<"$templates")"
+          echo "templates=$(jq -Rnc '[inputs | select(length > 0)]' <<<"$templates")" >> "$GITHUB_OUTPUT"
+
+  templates:
+    name: Check ${{ matrix.template }}
+    needs: changes
+    if: needs.changes.outputs.templates != '[]'
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        template: ${{ fromJSON(needs.changes.outputs.templates) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DeterminateSystems/determinate-nix-action@main
+      - uses: DeterminateSystems/flakehub-cache-action@main
       - name: Flake check
-        run: nix develop --command check
+        env:
+          TEMPLATE: ${{ matrix.template }}
+        run: nix develop --command check "$TEMPLATE"
 
   determinate-ci:
-    needs: check
+    needs:
+      - check
+      - templates
+    # Also run when no template changed and the matrix was skipped
+    if: ${{ !failure() && !cancelled() }}
     uses: DeterminateSystems/ci/.github/workflows/workflow.yml@main
     permissions:
       id-token: write
