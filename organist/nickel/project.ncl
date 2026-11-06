@@ -13,6 +13,31 @@ let with_dev_outputs =
   )
 in
 
+# Converts a JSON schema into a Nickel contract. Not in Nixpkgs, so it's built
+# from a pinned commit, as in the nickel template
+let json-schema-to-nickel =
+  organist.nix.derivation.CallNix
+  & {
+    function = m%"
+      { pkgs }:
+      pkgs.rustPlatform.buildRustPackage {
+        pname = "json-schema-to-nickel";
+        version = "0.1.0-unstable-2026-09-22";
+        src = pkgs.fetchFromGitHub {
+          owner = "nickel-lang";
+          repo = "json-schema-to-nickel";
+          rev = "4793648ac57eaee014f0308dc72034ac16e12be6";
+          hash = "sha256-+UdeGOzeCzwmfUd2xuqFD2VaXTXCbjsqO2LExcA9YCU=";
+        };
+        cargoHash = pkgs.lib.fakeHash;
+        doCheck = false;
+        meta.mainProgram = "json-schema-to-nickel";
+      }
+    "%,
+    args.pkgs = organist.import_nix "nixpkgs#pkgs",
+  }
+in
+
 organist.OrganistExpression
 & {
   Schema,
@@ -29,7 +54,8 @@ organist.OrganistExpression
         with_dev_outputs {
           nickel = organist.import_nix "nixpkgs#nickel",
           nixfmt = organist.import_nix "nixpkgs#nixfmt",
-        },
+        }
+        & { json-schema-to-nickel = json-schema-to-nickel },
     },
   },
 }
