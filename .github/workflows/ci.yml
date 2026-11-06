@@ -3,6 +3,14 @@ name: Run checks and Determinate CI
 on:
   pull_request:
   workflow_dispatch:
+    inputs:
+      templates:
+        description: Templates to check, separated by spaces (leave empty for all of them)
+        required: false
+        default: ""
+  # Every template, weekly: the only automatic full run
+  schedule:
+    - cron: "41 3 * * 1"
   push:
     branches:
       - main
@@ -30,8 +38,9 @@ jobs:
       - name: Check formatting
         run: nix develop --command check-formatting
 
-  # Checking a template builds its whole dev shell, so pull requests check
-  # only the templates they change; pushes and manual runs check them all
+  # Checking a template builds its whole dev shell, so pull requests and
+  # pushes check only the templates they change. Every template is checked
+  # weekly, on tags, and on manual runs that don't name templates.
   changes:
     name: Find templates to check
     runs-on: ubuntu-latest
@@ -46,7 +55,10 @@ jobs:
       - id: find
         env:
           EVENT: ${{ github.event_name }}
-          BASE: ${{ github.event.pull_request.base.sha }}
+          REF_TYPE: ${{ github.ref_type }}
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          PUSH_BEFORE: ${{ github.event.before }}
+          REQUESTED: ${{ inputs.templates }}
         run: |
           all_templates() {
             for dir in */; do
@@ -56,28 +68,36 @@ jobs:
             done
           }
 
-          if [ "$EVENT" != pull_request ]; then
-            templates="$(all_templates)"
-          else
-            changed="$(git diff --name-only "$BASE...HEAD")"
-            if grep -qx '\.github/workflows/ci\.yml' <<<"$changed"; then
-              # A change to this workflow is tested on every template
-              templates="$(all_templates)"
-            else
-              templates="$(cut -d / -f 1 <<<"$changed" | sort -u | while read -r dir; do
-                if [ -f "$dir/flake.nix" ]; then
-                  printf '%s\n' "$dir"
-                fi
-              done)"
-              # The root flake.nix holds the check script (and the template
-              # list every new template edits), so a change there runs the
-              # script on the smallest template too. The root flake.lock
-              # needs nothing: templates resolve their own Nixpkgs.
-              if grep -qx 'flake\.nix' <<<"$changed"; then
-                templates="$(printf '%s\nempty\n' "$templates" | sort -u)"
+          changed_templates() {
+            local changed
+            changed="$(git diff --name-only "$1")"
+            cut -d / -f 1 <<<"$changed" | sort -u | while read -r dir; do
+              if [ -f "$dir/flake.nix" ]; then
+                printf '%s\n' "$dir"
               fi
+            done
+            # The root flake.nix (check script, template list) and this
+            # workflow affect how every template is checked, so a change to
+            # either runs the check on the smallest template. The root
+            # flake.lock needs nothing: templates resolve their own Nixpkgs.
+            if grep -qxE 'flake\.nix|\.github/workflows/ci\.yml' <<<"$changed"; then
+              echo empty
             fi
+          }
+
+          if [ "$EVENT" = workflow_dispatch ] && [ -n "$REQUESTED" ]; then
+            templates="$(tr ' ' '\n' <<<"$REQUESTED")"
+          elif [ "$EVENT" = schedule ] || [ "$EVENT" = workflow_dispatch ] || [ "$REF_TYPE" = tag ]; then
+            templates="$(all_templates)"
+          elif [ "$EVENT" = pull_request ]; then
+            templates="$(changed_templates "$PR_BASE...HEAD")"
+          elif [ -n "$PUSH_BEFORE" ] && git cat-file -e "$PUSH_BEFORE^{commit}" 2>/dev/null; then
+            templates="$(changed_templates "$PUSH_BEFORE..HEAD")"
+          else
+            # A push whose previous commit isn't known (a new branch)
+            templates="$(changed_templates "HEAD^..HEAD")"
           fi
+          templates="$(sort -u <<<"$templates")"
 
           echo "Templates to check: $(tr '\n' ' ' <<<"$templates")"
           echo "templates=$(jq -Rnc '[inputs | select(length > 0)]' <<<"$templates")" >> "$GITHUB_OUTPUT"
