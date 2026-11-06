@@ -72,7 +72,33 @@
               settings="$claude_dir/settings.local.json"
               state="$project/.gstack"
 
+              # gstack puts each of its skills in .claude/skills, which
+              # .gitignore covers. When .claude/skills links elsewhere, as the
+              # agents template's link to .agents/skills does, the skills next
+              # to gstack's are committed, so gstack's own are excluded in this
+              # clone's .git/info/exclude instead, one by one.
+              exclude_gstack_skills() {
+                local skills root exclude gstack entry rel
+                skills="$(cd "$claude_dir/skills" 2>/dev/null && pwd -P)" || return 0
+                root="$(cd "$project" && pwd -P)"
+                [ "$skills" != "$root/.claude/skills" ] || return 0
+                exclude="$(git -C "$root" rev-parse --path-format=absolute --git-path info/exclude 2>/dev/null)" || return 0
+                gstack="$(cd "$install" 2>/dev/null && pwd -P)" || return 0
+                mkdir -p "$(dirname "$exclude")"
+                touch "$exclude"
+                for entry in "$skills"/*; do
+                  if [ "$entry" = "$gstack" ] || [ -f "$entry/.gstack-owned" ] ||
+                    [[ "$(readlink -f "$entry")" == "$gstack"/* ]] ||
+                    [[ "$(readlink -f "$entry/SKILL.md" 2>/dev/null)" == "$gstack"/* ]]; then
+                    rel="/$(realpath -s --relative-to="$root" "$entry")"
+                    grep -qxF "$rel" "$exclude" || echo "$rel" >>"$exclude"
+                  fi
+                done
+              }
+
               if [ -f "$state/bootstrap-done" ] && [ -d "$install" ]; then
+                # gstack updates itself, and may add skills
+                exclude_gstack_skills
                 exit 0
               fi
 
@@ -125,6 +151,7 @@
               jq --argjson env "$env" '.env = ((.env // {}) + $env)' "$settings" >"$settings.tmp"
               mv "$settings.tmp" "$settings"
 
+              exclude_gstack_skills
               touch "$state/bootstrap-done"
               echo "gstack: installed; it updates itself from gstack's stable channel" >&2
             '';
