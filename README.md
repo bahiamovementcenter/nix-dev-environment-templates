@@ -299,6 +299,7 @@ Everything gstack writes stays in the project and out of git (`.claude/skills/`,
 - [Cachix]
 - [dhall-to-nix]
 - [lorri]
+- [nh]
 - [niv]
 - [nixfmt]
 - [statix]
@@ -515,6 +516,7 @@ Everything gstack writes stays in the project and out of git (`.claude/skills/`,
 [maven]: https://maven.apache.org
 [mermaid-cli]: https://github.com/mermaid-js/mermaid-cli
 [mix]: https://elixir-lang.org/getting-started/mix-otp/introduction-to-mix.html
+[nh]: https://github.com/nix-community/nh
 [nickel]: https://nickel-lang.org
 [nim]: https://nim-lang.org
 [nimble]: https://github.com/nim-lang/nimble
