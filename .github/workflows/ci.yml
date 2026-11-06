@@ -101,11 +101,22 @@ jobs:
           templates="$(sort -u <<<"$templates")"
 
           # The Organist parity check compares organist/ with the templates it
-          # was ported from, against the Nixpkgs in the root flake.lock
-          organist=true
+          # was ported from, against the Nixpkgs in the root flake.lock, so it
+          # runs when any of those (or this workflow) change, and on full runs
+          range=""
           if [ "$EVENT" = pull_request ]; then
+            range="$PR_BASE...HEAD"
+          elif [ "$EVENT" = push ] && [ "$REF_TYPE" != tag ]; then
+            if [ -n "$PUSH_BEFORE" ] && git cat-file -e "$PUSH_BEFORE^{commit}" 2>/dev/null; then
+              range="$PUSH_BEFORE..HEAD"
+            else
+              range="HEAD^..HEAD"
+            fi
+          fi
+          organist=true
+          if [ -n "$range" ]; then
             originals="$(jq -r '.templates[].original' organist/parity.json | paste -sd '|')"
-            if ! grep -qE "^(organist|$originals)/|^(flake\.lock|\.github/workflows/ci\.yml)$" <<<"$changed"; then
+            if ! git diff --name-only "$range" | grep -qE "^(organist|$originals)/|^(flake\.lock|\.github/workflows/ci\.yml)$"; then
               organist=false
             fi
           fi
