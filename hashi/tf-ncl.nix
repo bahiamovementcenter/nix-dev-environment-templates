@@ -38,7 +38,7 @@ let
     pname = "schema-merge";
     inherit version;
     src = "${src}/schema-merge";
-    vendorHash = lib.fakeHash;
+    vendorHash = "sha256-JWHyBLu5hqO+ed2SwdmLabwbPeKAM30UirfksI3aSPc=";
     meta.mainProgram = "schema-merge";
   };
 
