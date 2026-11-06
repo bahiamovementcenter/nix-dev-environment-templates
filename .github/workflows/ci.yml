@@ -159,6 +159,11 @@ jobs:
       - uses: DeterminateSystems/determinate-nix-action@main
       - uses: DeterminateSystems/flakehub-cache-action@main
       - name: Parity check
+        # Organist imports Nix expressions it generates during evaluation;
+        # Determinate Nix's lazy trees leave the derivations they refer to
+        # unwritten ("path …-regenerate-files.drv is not valid")
+        env:
+          NIX_CONFIG: lazy-trees = false
         run: nix develop --command check-organist
 
   determinate-ci:
