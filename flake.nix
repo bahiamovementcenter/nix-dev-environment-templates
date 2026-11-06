@@ -30,10 +30,19 @@
           default =
             let
               getSystem = "SYSTEM=$(nix eval --impure --raw --expr 'builtins.currentSystem')";
-              # Directories without a flake.nix (like organist/) are skipped
+              # Runs `exec` in each directory given as an argument (`check rust go`),
+              # or in every directory with a flake.nix when there are none
               forEachDir = exec: ''
-                for dir in */; do
-                  [ -f "''${dir}flake.nix" ] || continue
+                dirs=("$@")
+                if [ "''${#dirs[@]}" -eq 0 ]; then
+                  for dir in */; do
+                    if [ -f "''${dir}flake.nix" ]; then
+                      dirs+=("''${dir%/}")
+                    fi
+                  done
+                fi
+
+                for dir in "''${dirs[@]}"; do
                   (
                     cd "''${dir}"
 
