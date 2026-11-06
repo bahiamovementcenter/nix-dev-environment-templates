@@ -34,6 +34,7 @@
       "smoke": [
         "elixir --version | tail -n 1",
         "mix --version | tail -n 1",
+        "erl -noshell -eval 'io:format(\"~s~n\", [erlang:system_info(otp_release)]), halt().'",
         "command -v git node inotifywait gigalixir notify-send | xargs -n 1 basename",
         "echo \"CC=${CC:-unset}\""
       ]

@@ -16,10 +16,17 @@ in
 # documentation
 # https://nixos.org/manual/nixpkgs/stable/#sec-beam
 #
-# All BEAM packages come from the set built with Erlang/OTP 28. Change
-# `beam28Packages` to pick another OTP version, and `elixir_1_19` to pick
-# another Elixir version (`elixir` follows the Nixpkgs default).
-let elixir_package = organist.import_nix "nixpkgs#beam28Packages.elixir_1_19" in
+# nixpkgs provides one package set per Erlang/OTP release (beam26Packages,
+# beam27Packages, beam28Packages, ...); every package in a set (elixir,
+# rebar3, hex, ...) is compiled with that OTP version. "beamPackages" follows
+# the nixpkgs default.
+let beam_packages = "beam28Packages" in
+
+# use latest version of Elixir 1.19 ("elixir" follows the set's default)
+let elixir_package = organist.import_nix "nixpkgs#%{beam_packages}.elixir_1_19" in
+
+# the Erlang/OTP of the selected set, so `erl` matches the OTP Elixir uses
+let erlang_package = organist.import_nix "nixpkgs#%{beam_packages}.erlang" in
 
 # Platform checks need Nix, so this calls a bit of it: the package is used on
 # matching platforms only, and replaced by an empty directory elsewhere.
@@ -53,6 +60,9 @@ organist.OrganistExpression
         with_dev_outputs {
           # will also install OTP, mix, hex, rebar3
           elixir = elixir_package,
+
+          # Erlang/OTP tools (erl, erlc, ...) from the same OTP version as Elixir
+          erlang = erlang_package,
 
           # mix needs it for downloading dependencies
           git = organist.import_nix "nixpkgs#git",
