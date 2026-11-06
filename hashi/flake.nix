@@ -28,21 +28,39 @@
     {
       devShells = forEachSupportedSystem (
         { pkgs, system }:
+        let
+          # Terraform in Nickel: link-schema, run-nickel and run-terraform
+          # (see tf-ncl.nix)
+          tf-ncl = import ./tf-ncl.nix {
+            inherit pkgs;
+            # The Terraform providers to write Nickel contracts for, from
+            # Nixpkgs' terraform-providers; they're also built into terraform.
+            # With none, the contracts cover Terraform's own settings only.
+            providers = p: {
+              # inherit (p) hashicorp_aws hashicorp_random;
+            };
+          };
+        in
         {
           default = pkgs.mkShellNoCC {
-            packages = with pkgs; [
-              packer
-              terraform
-              tflint
-              nomad
-              vault
-              nomad-autoscaler
-              nomad-pack
-              levant
-              damon
-              terragrunt
-              self.formatter.${system}
-            ];
+            packages =
+              with pkgs;
+              [
+                packer
+                tf-ncl.terraform
+                tflint
+                nomad
+                vault
+                nomad-autoscaler
+                nomad-pack
+                levant
+                damon
+                terragrunt
+                nickel
+                nls # Nickel language server
+                self.formatter.${system}
+              ]
+              ++ tf-ncl.scripts;
           };
         }
       );
