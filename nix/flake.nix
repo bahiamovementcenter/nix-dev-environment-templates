@@ -29,6 +29,7 @@
           default = pkgs.mkShellNoCC {
             packages = with pkgs; [
               nixd
+              nh
               cachix
               lorri
               niv
