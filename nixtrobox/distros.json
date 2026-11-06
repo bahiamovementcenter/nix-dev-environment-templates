@@ -1,0 +1,41 @@
+{
+  "archlinux": {
+    "image": "docker.io/library/archlinux",
+    "tag": "latest",
+    "systems": [
+      "x86_64-linux"
+    ],
+    "caAnchor": "/etc/ca-certificates/trust-source/anchors/nixtrobox.pem",
+    "preInit": "update-ca-trust"
+  },
+  "debian": {
+    "image": "docker.io/library/debian",
+    "tag": "trixie",
+    "systems": [
+      "x86_64-linux",
+      "aarch64-linux"
+    ],
+    "caAnchor": "/usr/local/share/ca-certificates/nixtrobox.crt",
+    "preInit": "sed -i 's|http://|https://|g' /etc/apt/sources.list.d/debian.sources; echo 'Acquire::https::CaInfo \"/usr/local/share/ca-certificates/nixtrobox.crt\";' > /etc/apt/apt.conf.d/99nixtrobox-ca; if command -v update-ca-certificates >/dev/null; then update-ca-certificates; fi"
+  },
+  "fedora": {
+    "image": "registry.fedoraproject.org/fedora",
+    "tag": "43",
+    "systems": [
+      "x86_64-linux",
+      "aarch64-linux"
+    ],
+    "caAnchor": "/etc/pki/ca-trust/source/anchors/nixtrobox.pem",
+    "preInit": "update-ca-trust"
+  },
+  "ubuntu": {
+    "image": "docker.io/library/ubuntu",
+    "tag": "24.04",
+    "systems": [
+      "x86_64-linux",
+      "aarch64-linux"
+    ],
+    "caAnchor": "/usr/local/share/ca-certificates/nixtrobox.crt",
+    "preInit": "echo 'Acquire::https::CaInfo \"/usr/local/share/ca-certificates/nixtrobox.crt\";' > /etc/apt/apt.conf.d/99nixtrobox-ca; if command -v update-ca-certificates >/dev/null; then update-ca-certificates; fi"
+  }
+}
