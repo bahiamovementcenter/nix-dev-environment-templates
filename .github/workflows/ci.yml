@@ -37,6 +37,8 @@ jobs:
       - uses: DeterminateSystems/flakehub-cache-action@main
       - name: Check formatting
         run: nix develop --command check-formatting
+      - name: Check that templates' copies of pkgs/ are identical
+        run: nix develop --command check-vendored
 
   # Checking a template builds its whole dev shell, so pull requests and
   # pushes check only the templates they change. Every template is checked

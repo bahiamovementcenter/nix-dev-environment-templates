@@ -140,6 +140,16 @@ nix develop --command check-organist java     # just one
 
 It evaluates both shells against the Nixpkgs revision locked in this repo's `flake.lock` and compares which package provides each command, the shell's variables and functions, and the output of a few commands run in both shells. The commands, and any intended differences, are listed in [`organist/parity.json`](./organist/parity.json).
 
+## Packages that aren't in Nixpkgs
+
+Some templates need tools Nixpkgs doesn't have (`jd`, `jdexmd`, `wattlebird-generator`, `json-schema-to-nickel`). Each is defined once in [`pkgs/`](./pkgs/) and exported by this repo's flake, so you can use them without a template:
+
+```shell
+nix run github:bahiamovementcenter/nix-dev-environment-templates#json-schema-to-nickel -- schema.json
+```
+
+or add them to your own Nixpkgs with the flake's `overlays.default`. The templates that use one keep an identical copy in their own `pkgs/` folder, so each template still works on its own; `nix develop --command check-vendored` (run in CI) checks that the copies match.
+
 ## Template contents
 
 The sections below list what each template includes. In all cases, you're free to add and remove packages as you see fit; the templates are just boilerplate.

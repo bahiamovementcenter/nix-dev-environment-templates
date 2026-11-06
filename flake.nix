@@ -51,25 +51,6 @@
                 done
               '';
 
-              # The Agent Skills reference validator (agentskills.io), whose
-              # command is `agentskills`; not in Nixpkgs
-              skills-ref = pkgs.python3Packages.buildPythonApplication rec {
-                pname = "skills-ref";
-                version = "0.1.1";
-                format = "wheel";
-                src = pkgs.fetchPypi {
-                  pname = "skills_ref";
-                  inherit version format;
-                  dist = "py3";
-                  python = "py3";
-                  hash = "sha256-0121u43nGuMB2vXKnLcfilVejG+DptQORqW8Cfj0YbU=";
-                };
-                dependencies = with pkgs.python3Packages; [
-                  click
-                  strictyaml
-                ];
-              };
-
               script =
                 name: runtimeInputs: text:
                 pkgs.writeShellApplication {
@@ -108,7 +89,7 @@
                 # directories given.
                 (script "check-agents"
                   [
-                    skills-ref
+                    self.packages.${system}.skills-ref
                     check-jsonschema
                     (python3.withPackages (ps: [ ps.pyyaml ]))
                   ]
@@ -142,6 +123,25 @@
                 )
                 # Compares each Organist template with the template it was ported
                 # from; see organist/parity.py
+                # Checks that every template's copy of a package in pkgs/ is
+                # identical to the original, and that every package a template
+                # keeps in its own pkgs/ folder is in the root pkgs/ too
+                (script "check-vendored" [ diffutils ] ''
+                  cd "$(git rev-parse --show-toplevel)"
+                  status=0
+                  while IFS= read -r copy; do
+                    original="pkgs/$(basename "$copy")"
+                    if [ ! -f "$original" ]; then
+                      echo "$copy: no $original; add it there and copy it here" >&2
+                      status=1
+                    elif ! cmp -s "$original" "$copy"; then
+                      echo "$copy differs from $original:" >&2
+                      diff -u "$original" "$copy" >&2 || true
+                      status=1
+                    fi
+                  done < <(git ls-files '*/pkgs/*.nix')
+                  exit "$status"
+                '')
                 (script "check-organist" [ python3 ] ''
                   python3 "$(git rev-parse --show-toplevel)/organist/parity.py" "$@"
                 '')
@@ -154,9 +154,23 @@
 
       formatter = forEachSupportedSystem ({ pkgs, ... }: pkgs.nixfmt);
 
+      # Packages the templates use that Nixpkgs doesn't have, one file each in
+      # pkgs/. Templates keep identical copies in their own pkgs/ folder, so
+      # they stay self-contained; check-vendored keeps the copies in step.
+      overlays.default =
+        final: prev:
+        lib.packagesFromDirectoryRecursive {
+          inherit (final) callPackage;
+          directory = ./pkgs;
+        };
+
       packages = forEachSupportedSystem (
         { pkgs, system }:
-        {
+        lib.packagesFromDirectoryRecursive {
+          inherit (pkgs) callPackage;
+          directory = ./pkgs;
+        }
+        // {
           default = self.packages.${system}.dvt;
 
           dvt = pkgs.writeShellApplication {

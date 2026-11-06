@@ -19,7 +19,7 @@ You maintain the templates: each top-level directory with a `flake.nix` (plus `o
 ## Changing a template
 
 - Upstream owns most templates (compare with the `upstream-main` branch). Change one only when it's broken or the change is ours to keep, and keep the diff small so the daily upstream merge stays clean; consider contributing it upstream instead.
-- Something fetched outside Nixpkgs needs a pinned hash: build once with `lib.fakeHash` and copy the hash from the error.
+- A package that isn't in Nixpkgs goes in the root `pkgs/<name>.nix` (`callPackage` form), with an identical copy in the template's own `pkgs/`, called with `pkgs.callPackage ./pkgs/<name>.nix { }`. Build once with `lib.fakeHash` and copy the hash from the error.
 - A workaround gets a comment saying when to drop it, with a link to the upstream fix (see `purescript/flake.nix`).
 
 ## Porting to Organist

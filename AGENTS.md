@@ -16,6 +16,7 @@ All from the dev shell (`nix develop --command <script>`):
 | `build [TEMPLATE…]` | Builds each template's dev shell for the current system |
 | `check-formatting` / `format` | `nixfmt` on every tracked `.nix` file |
 | `check-organist [TEMPLATE…]` | Compares `organist/*` with the templates they were ported from (needs `lazy-trees = false` on Determinate Nix) |
+| `check-vendored` | Checks that templates' copies of packages in `pkgs/` are identical to the originals |
 | `check-agents [DIR…]` | Validates skills, subagents, `.claude/settings.json` and the `.claude/skills` symlink, here and in `agents/` |
 
 Checking a template builds its whole shell, so check only the templates you changed. CI does the same: see `.github/workflows/ci.yml`.
@@ -25,6 +26,7 @@ Checking a template builds its whole shell, so check only the templates you chan
 - Run `format` before committing; CI fails on unformatted Nix.
 - Templates follow one shape: `supportedSystems` (`x86_64-linux`, `aarch64-linux`, `aarch64-darwin`), `forEachSupportedSystem`, `devShells.<system>.default`, and `formatter` set to `nixfmt`, with Nixpkgs from `https://flakehub.com/f/NixOS/nixpkgs/0.1`.
 - Comments say why, not what. Pin anything fetched by hash, and say in a comment when a workaround can be dropped.
+- A package Nixpkgs lacks goes in `pkgs/<name>.nix`, in `callPackage` form, and the root flake exports it (`packages`, `overlays.default`). A template that needs it keeps an identical copy in its own `pkgs/` and calls `pkgs.callPackage ./pkgs/<name>.nix { }`, so it stays self-contained; edit the original and copy it over.
 
 ## Commits and pull requests
 
