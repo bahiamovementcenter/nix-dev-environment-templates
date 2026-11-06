@@ -26,7 +26,7 @@ let
   tf-ncl = pkgs.rustPlatform.buildRustPackage {
     pname = "tf-ncl";
     inherit version src;
-    cargoHash = lib.fakeHash;
+    cargoHash = "sha256-J0ZOW5EKzdjqa3rRCxmpbwCAHRxQTEcn6ffRksUp+hk=";
     # Upstream's CI runs the tests; the shell only needs the binary
     doCheck = false;
     meta.mainProgram = "tf-ncl";
