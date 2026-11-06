@@ -287,7 +287,9 @@ Everything gstack writes stays in the project and out of git (`.claude/skills/`,
 
 ### [`nickel`](./nickel/)
 
-- [Nickel]
+- [Nickel], which also formats Nickel code (`nickel format`)
+- [nls], the Nickel language server
+- [json-schema-to-nickel], which converts a JSON schema into a Nickel contract (`json-schema-to-nickel schema.json > contract.ncl`)
 
 ### [`nim`](./nim)
 
@@ -503,6 +505,7 @@ Everything gstack writes stays in the project and out of git (`.claude/skills/`,
 [jd]: https://johnnydecimal.com
 [jd-cli]: https://github.com/johnnydecimal/cli.johnnydecimal.com
 [jdd]: https://github.com/mahyarmirrashed/jdd
+[json-schema-to-nickel]: https://github.com/nickel-lang/json-schema-to-nickel
 [jupyter]: https://jupyter.org
 [knitr]: https://yihui.org/knitr
 [kotlin]: https://kotlinlang.org
@@ -525,6 +528,7 @@ Everything gstack writes stays in the project and out of git (`.claude/skills/`,
 [nix-ld]: https://github.com/nix-community/nix-ld
 [nixfmt]: https://github.com/serokell/nixfmt
 [nix-direnv]: https://github.com/nix-community/nix-direnv
+[nls]: https://github.com/nickel-lang/nickel/tree/master/lsp
 [node]: https://nodejs.org
 [node2nix]: https://github.com/svanderburg/node2nix
 [nomad]: https://nomadproject.io
