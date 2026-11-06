@@ -163,7 +163,7 @@ It evaluates both shells against the Nixpkgs revision locked in this repo's `fla
 
 ## Packages that aren't in Nixpkgs
 
-Some templates need tools Nixpkgs doesn't have (`jd`, `jdexmd`, `wattlebird-generator`, `json-schema-to-nickel`). Each is defined once in [`pkgs/`](./pkgs/) and exported by this repo's flake, so you can use them without a template:
+Some templates need tools Nixpkgs doesn't have (`jd`, `jdexmd`, `wattlebird-generator`, `json-schema-to-nickel`, `tf-ncl`, `schema-merge`). Each is defined once in [`pkgs/`](./pkgs/) and exported by this repo's flake, so you can use them without a template:
 
 ```shell
 nix run github:bahiamovementcenter/nix-dev-environment-templates#json-schema-to-nickel -- schema.json
@@ -273,6 +273,21 @@ Everything gstack writes stays in the project and out of git (`.claude/skills/`,
 - [damon]
 - [Terragrunt]
 - [tflint]
+- [Tf-Ncl], [Nickel] and [nls], for writing Terraform configurations in Nickel, checked against contracts for the providers you select in `flake.nix`:
+  - `link-schema` links the contracts into the project as `tf-ncl-schema.ncl`, for `main.ncl` to import
+  - `run-nickel` evaluates `main.ncl` into `main.tf.json`
+  - `run-terraform …` runs `run-nickel`, then Terraform with those arguments
+
+  A minimal `main.ncl`, with `hashicorp_null` selected:
+
+  ```nickel
+  let Tf = import "./tf-ncl-schema.ncl" in
+  {
+    config.resource.null_resource.hello.provisioner.local-exec = [
+      { command = "echo 'Hello from Nickel'" },
+    ],
+  } | Tf.Config
+  ```
 
 ### [`haskell`](./haskell/)
 
@@ -603,6 +618,7 @@ Everything gstack writes stays in the project and out of git (`.claude/skills/`,
 [terragrunt]: https://terragrunt.gruntwork.io
 [texlab]: https://github.com/latex-lsp/texlab
 [texlive]: https://tug.org/texlive
+[tf-ncl]: https://github.com/nickel-lang/tf-ncl
 [tflint]: https://github.com/terraform-linters/tflint
 [tinymist]: https://github.com/Myriad-Dreamin/tinymist
 [typix]: https://github.com/loqusion/typix
