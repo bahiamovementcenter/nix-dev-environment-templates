@@ -161,7 +161,8 @@ jobs:
       - name: Parity check
         # Organist imports Nix expressions it generates during evaluation;
         # Determinate Nix's lazy trees leave the derivations they refer to
-        # unwritten ("path …-regenerate-files.drv is not valid")
+        # unwritten ("path …-regenerate-files.drv is not valid"). See the
+        # note in the README's Organist section.
         env:
           NIX_CONFIG: lazy-trees = false
         run: nix develop --command check-organist

@@ -97,6 +97,9 @@ The [`organist`](./organist/) directory has versions of four templates defined w
 
 They're initialized the same way (for example `nix flake init -t github:bahiamovementcenter/nix-dev-environment-templates#organist-java`; they aren't in the upstream repo) and give the same shell as the template they were ported from, plus [Nickel] and its language server for editing `project.ncl`.
 
+> [!NOTE]
+> With [Determinate Nix][determinate-nix], these templates fail to evaluate (`path '…-regenerate-files.drv' is not valid`) unless its lazy trees are turned off, for example with `NIX_CONFIG='lazy-trees = false' nix develop`. Organist imports Nix expressions it generates during evaluation, and lazy trees leave the derivations those refer to unwritten. Upstream Nix is unaffected.
+
 Organist evaluates `project.ncl` with [import from derivation][ifd], so `nix flake check --all-systems` can't evaluate these templates for other systems from a single machine. They're left out of the `build` and `check` scripts, and checked by `check-organist` instead, which compares each one with its original on the current system:
 
 ```shell
@@ -398,6 +401,7 @@ A dev template that's fully customizable.
 [cue]: https://cuelang.org
 [damon]: https://github.com/hashicorp/damon
 [deno]: https://deno.com
+[determinate-nix]: https://docs.determinate.systems/determinate-nix
 [dhall]: https://dhall-lang.org
 [dhall-bash]: https://github.com/dhall-lang/dhall-haskell/tree/master/dhall-bash
 [dhall-docs]: https://github.com/dhall-lang/dhall-haskell/tree/master/dhall-docs
