@@ -48,6 +48,7 @@ jobs:
       contents: read
     outputs:
       templates: ${{ steps.find.outputs.templates }}
+      organist: ${{ steps.find.outputs.organist }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -101,6 +102,28 @@ jobs:
           fi
           templates="$(sort -u <<<"$templates")"
 
+          # The Organist parity check compares organist/ with the templates it
+          # was ported from, against the Nixpkgs in the root flake.lock, so it
+          # runs when any of those (or this workflow) change, and on full runs
+          range=""
+          if [ "$EVENT" = pull_request ]; then
+            range="HEAD^1..HEAD"
+          elif [ "$EVENT" = push ] && [ "$REF_TYPE" != tag ]; then
+            if [ -n "$PUSH_BEFORE" ] && git cat-file -e "$PUSH_BEFORE^{commit}" 2>/dev/null; then
+              range="$PUSH_BEFORE..HEAD"
+            else
+              range="HEAD^..HEAD"
+            fi
+          fi
+          organist=true
+          if [ -n "$range" ]; then
+            originals="$(jq -r '.templates[].original' organist/parity.json | paste -sd '|')"
+            if ! git diff --name-only "$range" | grep -qE "^(organist|$originals)/|^(flake\.lock|\.github/workflows/ci\.yml)$"; then
+              organist=false
+            fi
+          fi
+          echo "organist=$organist" >> "$GITHUB_OUTPUT"
+
           echo "Templates to check: $(tr '\n' ' ' <<<"$templates")"
           echo "templates=$(jq -Rnc '[inputs | select(length > 0)]' <<<"$templates")" >> "$GITHUB_OUTPUT"
 
@@ -125,11 +148,33 @@ jobs:
           TEMPLATE: ${{ matrix.template }}
         run: nix develop --command check "$TEMPLATE"
 
+  organist:
+    name: Organist templates match their originals
+    needs: changes
+    if: needs.changes.outputs.organist == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DeterminateSystems/determinate-nix-action@main
+      - uses: DeterminateSystems/flakehub-cache-action@main
+      - name: Parity check
+        # Organist imports Nix expressions it generates during evaluation;
+        # Determinate Nix's lazy trees leave the derivations they refer to
+        # unwritten ("path …-regenerate-files.drv is not valid"). See the
+        # note in the README's Organist section.
+        env:
+          NIX_CONFIG: lazy-trees = false
+        run: nix develop --command check-organist
+
   determinate-ci:
     needs:
       - check
       - templates
-    # Also run when no template changed and the matrix was skipped
+      - organist
+    # Also run when the matrix or the parity check was skipped
     if: ${{ !failure() && !cancelled() }}
     uses: DeterminateSystems/ci/.github/workflows/workflow.yml@main
     permissions:

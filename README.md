@@ -86,6 +86,31 @@ Once your preferred template has been initialized, you can use the provided shel
 | [Vlang]                  | [`vlang`](./vlang/)           |
 | [Zig]                    | [`zig`](./zig/)               |
 
+## Organist templates
+
+The [`organist`](./organist/) directory has versions of four templates defined with [Organist], which describes the development shell in [Nickel] (`project.ncl`) instead of Nix:
+
+| Language/framework/tool | Template                                     | Ported from               |
+| :---------------------- | :------------------------------------------- | :------------------------ |
+| [Elixir]                | [`organist-elixir`](./organist/elixir/)      | [`elixir`](./elixir/)     |
+| [Java]                  | [`organist-java`](./organist/java/)          | [`java`](./java/)         |
+| [Nickel]                | [`organist-nickel`](./organist/nickel/)      | [`nickel`](./nickel/)     |
+| [Python]                | [`organist-python`](./organist/python/)      | [`python`](./python/)     |
+
+They're initialized the same way (for example `nix flake init -t github:bahiamovementcenter/nix-dev-environment-templates#organist-java`; they aren't in the upstream repo) and give the same shell as the template they were ported from, plus [Nickel] and its language server for editing `project.ncl`.
+
+> [!NOTE]
+> With [Determinate Nix][determinate-nix], these templates fail to evaluate (`path '…-regenerate-files.drv' is not valid`) unless its lazy trees are turned off, for example with `NIX_CONFIG='lazy-trees = false' nix develop`. Organist imports Nix expressions it generates during evaluation, and lazy trees leave the derivations those refer to unwritten. Upstream Nix is unaffected.
+
+Organist evaluates `project.ncl` with [import from derivation][ifd], so `nix flake check --all-systems` can't evaluate these templates for other systems from a single machine. They're left out of the `build` and `check` scripts, and checked by `check-organist` instead, which compares each one with its original on the current system:
+
+```shell
+nix develop --command check-organist          # all templates
+nix develop --command check-organist java     # just one
+```
+
+It evaluates both shells against the Nixpkgs revision locked in this repo's `flake.lock` and compares which package provides each command, the shell's variables and functions, and the output of a few commands run in both shells. The commands, and any intended differences, are listed in [`organist/parity.json`](./organist/parity.json).
+
 ## Template contents
 
 The sections below list what each template includes. In all cases, you're free to add and remove packages as you see fit; the templates are just boilerplate.
@@ -394,6 +419,7 @@ Everything gstack writes stays in the project and out of git (`.claude/skills/`,
 [cue]: https://cuelang.org
 [damon]: https://github.com/hashicorp/damon
 [deno]: https://deno.com
+[determinate-nix]: https://docs.determinate.systems/determinate-nix
 [dhall]: https://dhall-lang.org
 [dhall-bash]: https://github.com/dhall-lang/dhall-haskell/tree/master/dhall-bash
 [dhall-docs]: https://github.com/dhall-lang/dhall-haskell/tree/master/dhall-docs
@@ -427,6 +453,7 @@ Everything gstack writes stays in the project and out of git (`.claude/skills/`,
 [haskell]: https://haskell.org
 [haxe]: https://haxe.org
 [iex]: https://hexdocs.pm/iex/IEx.html
+[ifd]: https://nix.dev/manual/nix/stable/language/import-from-derivation
 [java]: https://java.com
 [jdexmd]: https://github.com/graysonarts/jdexmd
 [jdtls]: https://projects.eclipse.org/projects/eclipse.jdt.ls
@@ -466,6 +493,7 @@ Everything gstack writes stays in the project and out of git (`.claude/skills/`,
 [odoc]: https://github.com/ocaml/odoc
 [odin]: https://github.com/odin-lang/Odin
 [opa]: https://openpolicyagent.org
+[organist]: https://github.com/nickel-lang/organist
 [pandoc]: https://pandoc.org
 [packer]: https://packer.io
 [pip]: https://pypi.org/project/pip

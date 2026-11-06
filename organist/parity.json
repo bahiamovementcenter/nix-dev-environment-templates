@@ -1,0 +1,43 @@
+{
+  "_comment": "organist.shells.Bash adds nickel and nls (for editing project.ncl) and an interactive bash to every shell",
+  "allowed_extra_packages": ["bash-interactive", "nickel", "nls"],
+  "allowed_replacements": { "bash": "bash-interactive" },
+  "templates": {
+    "nickel": {
+      "original": "nickel",
+      "smoke": [
+        "nickel --version",
+        "echo \"CC=${CC:-unset}\""
+      ]
+    },
+    "java": {
+      "original": "java",
+      "smoke": [
+        "java -version 2>&1 | head -n 1",
+        "mvn -v | grep 'Java version'",
+        "gradle --version --quiet | grep 'Launcher JVM'",
+        "echo \"$JAVA_TOOL_OPTIONS\" | grep -o 'lombok[^ ]*'",
+        "echo \"CC=${CC:-unset}\""
+      ]
+    },
+    "python": {
+      "original": "python",
+      "smoke": [
+        "python -c 'import sys; print(sys.version_info[:2], sys.prefix != sys.base_prefix)'",
+        "echo \"VIRTUAL_ENV=$VIRTUAL_ENV\"",
+        "pip --version | cut -d ' ' -f 1-2",
+        "echo \"CC=${CC:-unset}\""
+      ]
+    },
+    "elixir": {
+      "original": "elixir",
+      "smoke": [
+        "elixir --version | tail -n 1",
+        "mix --version | tail -n 1",
+        "erl -noshell -eval 'io:format(\"~s~n\", [erlang:system_info(otp_release)]), halt().'",
+        "command -v git node inotifywait gigalixir notify-send | xargs -n 1 basename",
+        "echo \"CC=${CC:-unset}\""
+      ]
+    }
+  }
+}
