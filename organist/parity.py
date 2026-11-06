@@ -13,6 +13,15 @@ actually gets:
 3. Smoke tests: the commands listed in parity.json are run in both shells, in
    the same scratch directory, and their exit codes and output must match.
 
+A template that merges several modules (listed with "composes" instead of
+"original") is checked against each of the templates those modules come
+from: every command each one provides must come from the same package, and
+each one's smoke tests must give the same output.
+
+The Organist templates take their modules (organist/modules) and the
+packages those use from the dev-templates flake input; it's pointed at this
+checkout, so a change is checked before it's published.
+
 Differences that are intended are listed per template in parity.json.
 
 Environment variables:
@@ -289,6 +298,35 @@ def run_smoke(orig, port, commands, scratch):
     return failures
 
 
+def check_composed(name, spec, templates, config, common, organist_extra, no_smoke):
+    """A template merging several modules: each original's commands must come
+    from the same packages in it, and each original's smoke commands must
+    give the same output in it."""
+    parts = spec["composes"]
+    print(f"\n== organist/{name} vs {' + '.join(templates[p]['original'] for p in parts)}")
+    port = Side("organist", HERE / name, common + organist_extra)
+    failures = []
+    try:
+        composed = resolve_commands(port.dev_env())
+        for part in parts:
+            part_spec = templates[part]
+            orig = Side(part_spec["original"], ROOT / part_spec["original"], common)
+            replacements = config.get("allowed_replacements", {}) | part_spec.get("allowed_replacements", {})
+            for cmd, provider in sorted(resolve_commands(orig.dev_env()).items()):
+                if cmd not in composed:
+                    failures.append(f"command `{cmd}` of {orig.label} missing (from {provider})")
+                elif composed[cmd] != provider and replacements.get(package_name(provider)) != package_name(composed[cmd]):
+                    failures.append(f"command `{cmd}` comes from {composed[cmd]}, in {orig.label}: {provider}")
+            if not no_smoke:
+                with tempfile.TemporaryDirectory(prefix="parity-") as scratch:
+                    failures += run_smoke(orig, port, part_spec.get("smoke", []), Path(scratch))
+    except RuntimeError as err:
+        failures.append(str(err))
+    for failure in failures:
+        print(f"  FAIL: {failure}")
+    return failures
+
+
 def main():
     config = json.loads((HERE / "parity.json").read_text())
     templates = config["templates"]
@@ -306,11 +344,21 @@ def main():
     print(f"Comparing against nixpkgs {nixpkgs}")
     common = ["--no-write-lock-file", "--override-input", "nixpkgs", nixpkgs]
     common += shlex.split(os.environ.get("PARITY_NIX_ARGS", ""))
-    organist_extra = shlex.split(os.environ.get("PARITY_ORGANIST_NIX_ARGS", ""))
+    # The Organist templates are built from this checkout's modules and
+    # packages, not the published ones their flake.nix points at
+    organist_extra = ["--override-input", "dev-templates", f"git+file://{ROOT}?shallow=1"]
+    organist_extra += shlex.split(os.environ.get("PARITY_ORGANIST_NIX_ARGS", ""))
 
     failed = []
     for name in args.templates or templates:
         spec = templates[name]
+        if "composes" in spec:
+            failures = check_composed(name, spec, templates, config, common, organist_extra, args.no_smoke)
+            if failures:
+                failed.append(name)
+            else:
+                print("  ok")
+            continue
         print(f"\n== organist/{name} vs {spec['original']}")
         orig = Side("original", ROOT / spec["original"], common)
         port = Side("organist", HERE / name, common + organist_extra)
