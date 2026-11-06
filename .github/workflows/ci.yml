@@ -49,6 +49,7 @@ jobs:
     outputs:
       templates: ${{ steps.find.outputs.templates }}
       organist: ${{ steps.find.outputs.organist }}
+      agents: ${{ steps.find.outputs.agents }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -124,6 +125,14 @@ jobs:
           fi
           echo "organist=$organist" >> "$GITHUB_OUTPUT"
 
+          # The agents template (AGENTS.md, Agent Skills, Claude Code settings)
+          # has no flake.nix, so it's checked by check-agents, not the matrix
+          agents=true
+          if [ -n "$range" ] && ! git diff --name-only "$range" | grep -qE "^agents/|^(flake\.nix|\.github/workflows/ci\.yml)$"; then
+            agents=false
+          fi
+          echo "agents=$agents" >> "$GITHUB_OUTPUT"
+
           echo "Templates to check: $(tr '\n' ' ' <<<"$templates")"
           echo "templates=$(jq -Rnc '[inputs | select(length > 0)]' <<<"$templates")" >> "$GITHUB_OUTPUT"
 
@@ -169,12 +178,28 @@ jobs:
           NIX_CONFIG: lazy-trees = false
         run: nix develop --command check-organist
 
+  agents:
+    name: Agent conventions are valid
+    needs: changes
+    if: needs.changes.outputs.agents == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DeterminateSystems/determinate-nix-action@main
+      - uses: DeterminateSystems/flakehub-cache-action@main
+      - name: Check skills, settings and the skills symlink
+        run: nix develop --command check-agents
+
   determinate-ci:
     needs:
       - check
       - templates
       - organist
-    # Also run when the matrix or the parity check was skipped
+      - agents
+    # Also run when the matrix or another check was skipped
     if: ${{ !failure() && !cancelled() }}
     uses: DeterminateSystems/ci/.github/workflows/workflow.yml@main
     permissions:
