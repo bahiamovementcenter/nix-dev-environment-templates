@@ -38,6 +38,7 @@ Once your preferred template has been initialized, you can use the provided shel
 
 | Language/framework/tool  | Template                      |
 | :----------------------- | :---------------------------- |
+| Agent conventions (layer) | [`agents`](./agents/)        |
 | [Bun]                    | [`bun`](./bun/)               |
 | [C] / [C++]              | [`c-cpp`](./c-cpp/)           |
 | [Clojure]                | [`clojure`](./clojure/)       |
@@ -86,6 +87,34 @@ Once your preferred template has been initialized, you can use the provided shel
 | [Vlang]                  | [`vlang`](./vlang/)           |
 | [Zig]                    | [`zig`](./zig/)               |
 
+## Agent conventions
+
+The [`agents`](./agents/) template sets a project up for AI coding agents, following the cross-tool standards where they exist and Claude Code's conventions where they don't:
+
+| What | Standard | Files |
+| :-- | :-- | :-- |
+| Instructions for any agent | [AGENTS.md] | `AGENTS.md` (nested ones for subprojects; the nearest wins) |
+| Claude Code's instructions | Claude Code | `CLAUDE.md`, which imports `AGENTS.md`; Claude Code reads `AGENTS.md` on its own only when there's no `CLAUDE.md` |
+| Skills | [Agent Skills] | `.agents/skills/<name>/SKILL.md`, the cross-client location, with `.claude/skills` a symlink to it for Claude Code |
+| Settings, permissions, hooks | Claude Code | `.claude/settings.json` (with `$schema`), committed; `.claude/settings.local.json`, gitignored |
+| MCP servers | Claude Code | `.mcp.json` |
+
+It has no `flake.nix`, `.envrc` or `.gitignore`, so it layers onto any project, including one made from another template:
+
+```shell
+nix flake init -t github:bahiamovementcenter/nix-dev-environment-templates#python
+nix flake init -t github:bahiamovementcenter/nix-dev-environment-templates#agents
+```
+
+Without Nix, extract it from the repository's tarball (GNU tar; `--skip-old-files` keeps files you already have):
+
+```shell
+curl -sL https://github.com/bahiamovementcenter/nix-dev-environment-templates/archive/refs/heads/main.tar.gz \
+  | tar -xz --strip-components=2 --skip-old-files --wildcards '*/agents/'
+```
+
+`nix develop --command check-agents [DIR…]` validates a project's skills with the Agent Skills reference validator (`agentskills`), its `.claude/settings.json` against the [Claude Code settings schema](https://json.schemastore.org/claude-code-settings.json), and the `.claude/skills` symlink. Keep personal notes in `CLAUDE.local.md`, and add it to your `.gitignore`.
+
 ## Organist templates
 
 The [`organist`](./organist/) directory has versions of four templates defined with [Organist], which describes the development shell in [Nickel] (`project.ncl`) instead of Nix:
@@ -114,6 +143,12 @@ It evaluates both shells against the Nixpkgs revision locked in this repo's `fla
 ## Template contents
 
 The sections below list what each template includes. In all cases, you're free to add and remove packages as you see fit; the templates are just boilerplate.
+
+### [`agents`](./agents/)
+
+- [AGENTS.md] and a `CLAUDE.md` that imports it
+- An [Agent Skills] folder, `.agents/skills/`, with one skill (`update-agents-md`) and `.claude/skills` linked to it
+- `.claude/settings.json` and `.mcp.json` for Claude Code
 
 ### [`bun`](./bun/)
 
@@ -394,6 +429,8 @@ Everything gstack writes stays in the project and out of git (`.claude/skills/`,
 - [LLDB]
 - [ZLS]
 
+[agent skills]: https://agentskills.io/specification
+[agents.md]: https://agents.md
 [boot]: https://boot-clj.com
 [buf]: https://github.com/bufbuild/buf
 [bun]: https://bun.sh

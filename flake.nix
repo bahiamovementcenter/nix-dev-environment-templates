@@ -51,6 +51,25 @@
                 done
               '';
 
+              # The Agent Skills reference validator (agentskills.io), whose
+              # command is `agentskills`; not in Nixpkgs
+              skills-ref = pkgs.python3Packages.buildPythonApplication rec {
+                pname = "skills-ref";
+                version = "0.1.1";
+                format = "wheel";
+                src = pkgs.fetchPypi {
+                  pname = "skills_ref";
+                  inherit version format;
+                  dist = "py3";
+                  python = "py3";
+                  hash = "sha256-0121u43nGuMB2vXKnLcfilVejG+DptQORqW8Cfj0YbU=";
+                };
+                dependencies = with pkgs.python3Packages; [
+                  click
+                  strictyaml
+                ];
+              };
+
               script =
                 name: runtimeInputs: text:
                 pkgs.writeShellApplication {
@@ -84,6 +103,39 @@
                 '')
                 # Compares each Organist template with the template it was ported
                 # from; see organist/parity.py
+                # Validates agent conventions: skills against the Agent Skills spec,
+                # .claude/settings.json against its schema, and the .claude/skills
+                # symlink. Checks the agents template, or the directories given.
+                (script "check-agents"
+                  [
+                    skills-ref
+                    check-jsonschema
+                  ]
+                  ''
+                    root="$(git rev-parse --show-toplevel)"
+                    dirs=("$@")
+                    if [ "''${#dirs[@]}" -eq 0 ]; then
+                      dirs=("$root/agents")
+                    fi
+                    status=0
+                    for dir in "''${dirs[@]}"; do
+                      echo "checking $dir"
+                      for skill in "$dir"/.agents/skills/*/; do
+                        [ -f "$skill/SKILL.md" ] || continue
+                        agentskills validate "$skill" || status=1
+                      done
+                      if [ -f "$dir/.claude/settings.json" ]; then
+                        check-jsonschema --schemafile https://json.schemastore.org/claude-code-settings.json \
+                          "$dir/.claude/settings.json" || status=1
+                      fi
+                      if [ -e "$dir/.agents/skills" ] && [ "$(readlink "$dir/.claude/skills")" != "../.agents/skills" ]; then
+                        echo "$dir/.claude/skills should be a symlink to ../.agents/skills" >&2
+                        status=1
+                      fi
+                    done
+                    exit "$status"
+                  ''
+                )
                 (script "check-organist" [ python3 ] ''
                   python3 "$(git rev-parse --show-toplevel)/organist/parity.py" "$@"
                 '')
@@ -131,6 +183,11 @@
       {
         templates = {
           default = self.templates.empty;
+
+          agents = {
+            path = ./agents;
+            description = "AGENTS.md, Agent Skills and Claude Code settings; no flake.nix, so it layers onto any project";
+          };
 
           bun = {
             path = ./bun;
