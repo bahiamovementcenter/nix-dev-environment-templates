@@ -99,7 +99,7 @@ The [`agents`](./agents/) template sets a project up for AI coding agents, follo
 | Settings, permissions, hooks | Claude Code | `.claude/settings.json` (with `$schema`), committed; `.claude/settings.local.json`, gitignored |
 | MCP servers | Claude Code | `.mcp.json` |
 
-It has no `flake.nix`, `.envrc` or `.gitignore`, so it layers onto any project, including one made from another template:
+It's deliberately unopinionated: it sets up only what these standards define, with placeholder headings in `AGENTS.md` and no skills, subagents, hooks or permissions of its own, so it can serve as the base for more opinionated setups. It has no `flake.nix`, `.envrc` or `.gitignore`, so it layers onto any project, including one made from another template:
 
 ```shell
 nix flake init -t github:bahiamovementcenter/nix-dev-environment-templates#python
@@ -147,7 +147,7 @@ The sections below list what each template includes. In all cases, you're free t
 ### [`agents`](./agents/)
 
 - [AGENTS.md] and a `CLAUDE.md` that imports it
-- An [Agent Skills] folder, `.agents/skills/`, with one skill (`update-agents-md`) and `.claude/skills` linked to it
+- An empty [Agent Skills] folder, `.agents/skills/`, with `.claude/skills` linked to it
 - `.claude/settings.json` and `.mcp.json` for Claude Code
 
 ### [`bun`](./bun/)
