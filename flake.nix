@@ -101,21 +101,22 @@
                 (script "check-formatting" [ nixfmt ] ''
                   git ls-files '*.nix' | xargs nixfmt --check
                 '')
-                # Compares each Organist template with the template it was ported
-                # from; see organist/parity.py
                 # Validates agent conventions: skills against the Agent Skills spec,
+                # Claude Code subagents (name, description, preloaded skills),
                 # .claude/settings.json against its schema, and the .claude/skills
-                # symlink. Checks the agents template, or the directories given.
+                # symlink. Checks this repo and the agents template, or the
+                # directories given.
                 (script "check-agents"
                   [
                     skills-ref
                     check-jsonschema
+                    (python3.withPackages (ps: [ ps.pyyaml ]))
                   ]
                   ''
                     root="$(git rev-parse --show-toplevel)"
                     dirs=("$@")
                     if [ "''${#dirs[@]}" -eq 0 ]; then
-                      dirs=("$root/agents")
+                      dirs=("$root" "$root/agents")
                     fi
                     status=0
                     for dir in "''${dirs[@]}"; do
@@ -124,6 +125,9 @@
                         [ -f "$skill/SKILL.md" ] || continue
                         agentskills validate "$skill" || status=1
                       done
+                      if [ -d "$dir/.claude/agents" ]; then
+                        python3 ${./scripts/check_subagents.py} "$dir" || status=1
+                      fi
                       if [ -f "$dir/.claude/settings.json" ]; then
                         check-jsonschema --schemafile https://json.schemastore.org/claude-code-settings.json \
                           "$dir/.claude/settings.json" || status=1
@@ -136,6 +140,8 @@
                     exit "$status"
                   ''
                 )
+                # Compares each Organist template with the template it was ported
+                # from; see organist/parity.py
                 (script "check-organist" [ python3 ] ''
                   python3 "$(git rev-parse --show-toplevel)/organist/parity.py" "$@"
                 '')
