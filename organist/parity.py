@@ -71,6 +71,12 @@ IGNORED_VARIABLES = {
     "PATH", "shellHook",
 }
 
+# Functions stdenv defines only for one way of building the shell: Organist
+# builds with structured attributes, mkShell doesn't
+IGNORED_FUNCTIONS = {
+    "_exportOutputsByName",
+}
+
 
 def nix(args, extra, **kwargs):
     cmd = NIX + args + extra
@@ -156,7 +162,8 @@ def normalize(env):
             value = " ".join(f"{k}={v}" for k, v in sorted(value.items()))
         result[name] = clean(value)
     for name, body in env.get("bashFunctions", {}).items():
-        result[f"function {name}"] = clean(body)
+        if name not in IGNORED_FUNCTIONS:
+            result[f"function {name}"] = clean(body)
     return result
 
 
