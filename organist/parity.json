@@ -7,6 +7,7 @@
       "original": "nickel",
       "smoke": [
         "nickel --version",
+        "json-schema-to-nickel --version",
         "echo \"CC=${CC:-unset}\""
       ]
     },

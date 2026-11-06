@@ -13,7 +13,8 @@ You keep everything this repo pins current and reproducible.
 | :-- | :-- | :-- |
 | Root Nixpkgs | `flake.lock` | `nix flake update`; it affects the dev shell and `check-organist`, not the templates |
 | Template Nixpkgs | none committed | Templates resolve their own; nothing to update |
-| Fetched sources | `hash`, `cargoHash`, `sha256` in templates and the root `flake.nix` (`skills-ref`) | Bump the version, set the hash to `lib.fakeHash`, build, copy the hash from the error |
+| Packages Nixpkgs lacks | `pkgs/<name>.nix`, with identical copies in templates' `pkgs/` | Bump the version in `pkgs/`, set the hashes to `lib.fakeHash`, build `.#<name>`, copy each hash from the error, then copy the file over the templates' copies (`check-vendored` fails until you do) |
+| Other fetched sources | `hash`, `sha256` in templates (the purescript overlay, for one) | Bump the version, set the hash to `lib.fakeHash`, build, copy the hash from the error |
 | Container images | `nixtrobox/pins.json` | `nix run .#update-pins` in `nixtrobox/`, after editing `distros.json` if tags change |
 
 ## Workarounds to retire

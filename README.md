@@ -96,10 +96,10 @@ The [`agents`](./agents/) template sets a project up for AI coding agents, follo
 | Instructions for any agent | [AGENTS.md] | `AGENTS.md` (nested ones for subprojects; the nearest wins) |
 | Claude Code's instructions | Claude Code | `CLAUDE.md`, which imports `AGENTS.md`; Claude Code reads `AGENTS.md` on its own only when there's no `CLAUDE.md` |
 | Skills | [Agent Skills] | `.agents/skills/<name>/SKILL.md`, the cross-client location, with `.claude/skills` a symlink to it for Claude Code |
-| Settings, permissions, hooks | Claude Code | `.claude/settings.json` (with `$schema`), committed; `.claude/settings.local.json`, gitignored |
+| Settings, permissions, hooks | Claude Code | `.claude/settings.json`, committed, created when a project needs settings (`check-agents` validates it); `.claude/settings.local.json`, gitignored |
 | MCP servers | Claude Code | `.mcp.json` |
 
-It's deliberately unopinionated: it sets up only what these standards define, with placeholder headings in `AGENTS.md` and no skills, subagents, hooks or permissions of its own, so it can serve as the base for more opinionated setups. It has no `flake.nix`, `.envrc` or `.gitignore`, so it layers onto any project, including one made from another template:
+It's deliberately unopinionated: it sets up only what these standards define, with placeholder headings in `AGENTS.md` and no skills, subagents, hooks or permissions of its own, so it can serve as the base for more opinionated setups. It has no `flake.nix`, `.envrc`, `.gitignore` or `.claude/settings.json`, so it layers onto any project, including one made from another template (`gstack` too, in either order):
 
 ```shell
 nix flake init -t github:bahiamovementcenter/nix-dev-environment-templates#python
@@ -140,6 +140,16 @@ nix develop --command check-organist java     # just one
 
 It evaluates both shells against the Nixpkgs revision locked in this repo's `flake.lock` and compares which package provides each command, the shell's variables and functions, and the output of a few commands run in both shells. The commands, and any intended differences, are listed in [`organist/parity.json`](./organist/parity.json).
 
+## Packages that aren't in Nixpkgs
+
+Some templates need tools Nixpkgs doesn't have (`jd`, `jdexmd`, `wattlebird-generator`, `json-schema-to-nickel`). Each is defined once in [`pkgs/`](./pkgs/) and exported by this repo's flake, so you can use them without a template:
+
+```shell
+nix run github:bahiamovementcenter/nix-dev-environment-templates#json-schema-to-nickel -- schema.json
+```
+
+or add them to your own Nixpkgs with the flake's `overlays.default`. The templates that use one keep an identical copy in their own `pkgs/` folder, so each template still works on its own; `nix develop --command check-vendored` (run in CI) checks that the copies match.
+
 ## Template contents
 
 The sections below list what each template includes. In all cases, you're free to add and remove packages as you see fit; the templates are just boilerplate.
@@ -148,7 +158,7 @@ The sections below list what each template includes. In all cases, you're free t
 
 - [AGENTS.md] and a `CLAUDE.md` that imports it
 - An empty [Agent Skills] folder, `.agents/skills/`, with `.claude/skills` linked to it
-- `.claude/settings.json` and `.mcp.json` for Claude Code
+- `.mcp.json` for Claude Code, and `.claude/.gitignore` for personal settings
 
 ### [`bun`](./bun/)
 
@@ -228,7 +238,7 @@ A dev template that's fully customizable.
 - [gstack], installed into the project's `.claude/skills/` the first time you enter the shell or start a Claude Code session there, then kept up to date by gstack's own auto-update
 - [Bun], [Node.js][node], [Git] and, on Linux, the Chromium gstack's browser skills drive
 
-Everything gstack writes stays in the project and out of git (`.claude/skills/`, `.claude/settings.local.json`, `.gstack/`). The committed `.claude/settings.json` installs gstack from a SessionStart hook, so Claude Code sessions that don't use the dev shell, such as cloud agents, get it too. In a [Claude Code cloud environment][claude-cloud], running `nix run .#gstack-bootstrap` from the environment's setup script installs it before the session starts.
+Everything gstack writes stays in the project and out of git (`.claude/skills/`, `.claude/settings.local.json`, `.gstack/`). Its instructions for Claude Code are in `.claude/rules/gstack.md`, not `CLAUDE.md`, so the template layers with [`agents`](#agent-conventions); there, `.claude/skills` links to `.agents/skills`, and `gstack-bootstrap` keeps gstack's skills out of git through the clone's `.git/info/exclude`. The committed `.claude/settings.json` installs gstack from a SessionStart hook, so Claude Code sessions that don't use the dev shell, such as cloud agents, get it too. In a [Claude Code cloud environment][claude-cloud], running `nix run .#gstack-bootstrap` from the environment's setup script installs it before the session starts.
 
 ### [`hashi`](./hashi/)
 
@@ -302,7 +312,9 @@ Everything gstack writes stays in the project and out of git (`.claude/skills/`,
 
 ### [`nickel`](./nickel/)
 
-- [Nickel]
+- [Nickel], which also formats Nickel code (`nickel format`)
+- [nls], the Nickel language server
+- [json-schema-to-nickel], which converts a JSON schema into a Nickel contract (`json-schema-to-nickel schema.json > contract.ncl`)
 
 ### [`nim`](./nim)
 
@@ -518,6 +530,7 @@ Everything gstack writes stays in the project and out of git (`.claude/skills/`,
 [jd]: https://johnnydecimal.com
 [jd-cli]: https://github.com/johnnydecimal/cli.johnnydecimal.com
 [jdd]: https://github.com/mahyarmirrashed/jdd
+[json-schema-to-nickel]: https://github.com/nickel-lang/json-schema-to-nickel
 [jupyter]: https://jupyter.org
 [knitr]: https://yihui.org/knitr
 [kotlin]: https://kotlinlang.org
