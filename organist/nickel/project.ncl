@@ -29,7 +29,7 @@ let json-schema-to-nickel =
           rev = "4793648ac57eaee014f0308dc72034ac16e12be6";
           hash = "sha256-+UdeGOzeCzwmfUd2xuqFD2VaXTXCbjsqO2LExcA9YCU=";
         };
-        cargoHash = pkgs.lib.fakeHash;
+        cargoHash = "sha256-QfPohkLtR6H9z5oxlQiNMxSnbO6ajfttbklbN1zObWc=";
         doCheck = false;
         meta.mainProgram = "json-schema-to-nickel";
       }

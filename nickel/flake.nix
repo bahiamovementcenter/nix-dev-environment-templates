@@ -39,7 +39,7 @@
               hash = "sha256-+UdeGOzeCzwmfUd2xuqFD2VaXTXCbjsqO2LExcA9YCU=";
             };
 
-            cargoHash = pkgs.lib.fakeHash;
+            cargoHash = "sha256-QfPohkLtR6H9z5oxlQiNMxSnbO6ajfttbklbN1zObWc=";
 
             # Upstream's CI runs the tests (against the whole JSON Schema test
             # suite); the shell only needs the binary
