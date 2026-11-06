@@ -61,6 +61,7 @@ Once your preferred template has been initialized, you can use the provided shel
 | [Nickel]                 | [`nickel`](./nickel/)         |
 | [Nim]                    | [`nim`](./nim/)               |
 | [Nix]                    | [`nix`](./nix/)               |
+| Other distributions ([Distrobox]) | [`nixtrobox`](./nixtrobox/) |
 | [Node.js][node]          | [`node`](./node/)             |
 | [OCaml]                  | [`ocaml`](./ocaml/)           |
 | [Odin]                   | [`odin`](./odin/)             |
@@ -232,6 +233,10 @@ A dev template that's fully customizable.
 - [statix]
 - [vulnix]
 
+### [`nixtrobox`](./nixtrobox/)
+
+- [Distrobox] boxes of Arch Linux, Debian, Fedora and Ubuntu, with each image pinned by digest and hash (see its [README](./nixtrobox/README.md))
+
 ### [`node`](./node/)
 
 - [Node.js][node]
@@ -387,6 +392,7 @@ A dev template that's fully customizable.
 [dhall-to-nix]: https://github.com/dhall-lang/dhall-haskell/tree/master/dhall-nix
 [dhall-toml]: https://github.com/dhall-lang/dhall-haskell/tree/master/dhall-toml
 [dhall-yaml]: https://github.com/dhall-lang/dhall-haskell/tree/master/dhall-yaml
+[distrobox]: https://distrobox.it
 [dotnet]: https://dotnet.microsoft.com/en-us
 [doxygen]: https://doxygen.nl
 [dune]: https://dune.build

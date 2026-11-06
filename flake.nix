@@ -226,6 +226,11 @@
             description = "Nix development environment";
           };
 
+          nixtrobox = {
+            path = ./nixtrobox;
+            description = "Distrobox containers of other Linux distributions, pinned with Nix";
+          };
+
           node = {
             path = ./node;
             description = "Node.js development environment";
