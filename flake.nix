@@ -349,6 +349,11 @@
             description = "Open Policy Agent development environment";
           };
 
+          organist = {
+            path = ./organist/compose;
+            description = "Organist development environment combining this repository's modules (Python and Nickel to start)";
+          };
+
           organist-elixir = {
             path = ./organist/elixir;
             description = "Elixir development environment, defined with Organist";

@@ -39,6 +39,10 @@
         "command -v git node inotifywait gigalixir notify-send | xargs -n 1 basename",
         "echo \"CC=${CC:-unset}\""
       ]
+    },
+    "compose": {
+      "_comment": "The organist template, merging the python and nickel modules",
+      "composes": ["python", "nickel"]
     }
   }
 }

@@ -128,6 +128,27 @@ The [`organist`](./organist/) directory has versions of four templates defined w
 
 They're initialized the same way (for example `nix flake init -t github:bahiamovementcenter/nix-dev-environment-templates#organist-java`; they aren't in the upstream repo) and give the same shell as the template they were ported from, plus [Nickel] and its language server for editing `project.ncl`.
 
+### Combining languages
+
+Each Organist template is one module from [`organist/modules`](./organist/modules/), merged into a base shell, so a project that needs several languages merges several modules. The [`organist`](./organist/compose/) template starts with Python and Nickel:
+
+```shell
+nix flake init -t github:bahiamovementcenter/nix-dev-environment-templates#organist
+```
+
+```nickel
+config | Schema =
+  modules.base
+  & modules.python { version = "3.13" }
+  & modules.nickel {}
+  & modules.java { version = 25 }
+  & { shells.dev.packages.ruff = organist.import_nix "nixpkgs#ruff" },
+```
+
+Each module takes a record of options, all optional (`{}` for the defaults); a misspelled option is an error. The modules come from this repository through the `dev-templates` flake input, which Organist's `lockFileContents` makes importable from `nickel.lock.ncl`. That input also provides the packages the modules use that aren't in Nixpkgs, built with the project's own Nixpkgs (`inputs.nixpkgs.follows`). Two modules that set the same thing differently, such as a different `postShellHook`, fail to merge rather than one silently winning.
+
+Modules so far: `base`, `elixir`, `java`, `nickel` and `python`.
+
 > [!NOTE]
 > With [Determinate Nix][determinate-nix], these templates fail to evaluate (`path '…-regenerate-files.drv' is not valid`) unless its lazy trees are turned off, for example with `NIX_CONFIG='lazy-trees = false' nix develop`. Organist imports Nix expressions it generates during evaluation, and lazy trees leave the derivations those refer to unwritten. Upstream Nix is unaffected.
 
@@ -138,7 +159,7 @@ nix develop --command check-organist          # all templates
 nix develop --command check-organist java     # just one
 ```
 
-It evaluates both shells against the Nixpkgs revision locked in this repo's `flake.lock` and compares which package provides each command, the shell's variables and functions, and the output of a few commands run in both shells. The commands, and any intended differences, are listed in [`organist/parity.json`](./organist/parity.json).
+It evaluates both shells against the Nixpkgs revision locked in this repo's `flake.lock` and compares which package provides each command, the shell's variables and functions, and the output of a few commands run in both shells. The commands, and any intended differences, are listed in [`organist/parity.json`](./organist/parity.json). The composed `organist` template is checked against each template it combines: every command they provide must come from the same package, and their smoke tests must give the same output. The check builds the Organist templates from this checkout's modules and packages, not the published ones.
 
 ## Packages that aren't in Nixpkgs
 
