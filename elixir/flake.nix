@@ -59,6 +59,11 @@
           # );
         in
         {
+          # ==== Erlang ====
+
+          # the Erlang/OTP of the selected set, so `erl` matches the OTP Elixir uses
+          erlang = beamPkgs.erlang;
+
           # ==== Elixir ====
 
           # use whatever Elixir version is currently the default in the set
@@ -83,6 +88,9 @@
               [
                 # use the Elixr/OTP versions defined above; will also install OTP, mix, hex, rebar3
                 elixir
+
+                # Erlang/OTP tools (erl, erlc, ...) from the same OTP version as Elixir
+                erlang
 
                 # mix needs it for downloading dependencies
                 git
