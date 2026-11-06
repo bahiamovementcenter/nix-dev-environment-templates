@@ -50,6 +50,7 @@ Once your preferred template has been initialized, you can use the provided shel
 | Empty (change at will)   | [`empty`](./empty)            |
 | [Gleam]                  | [`gleam`](./gleam/)           |
 | [Go]                     | [`go`](./go/)                 |
+| [gstack] for [Claude Code] | [`gstack`](./gstack/)    |
 | [Hashicorp] tools        | [`hashi`](./hashi/)           |
 | [Haskell]                | [`haskell`](./haskell/)       |
 | [Haxe]                   | [`haxe`](./haxe/)             |
@@ -159,6 +160,14 @@ A dev template that's fully customizable.
 - [Go]
 - Standard Go tools ([goimports], [godoc], and others)
 - [golangci-lint]
+
+### [`gstack`](./gstack/)
+
+- [Claude Code], the latest release from npm on every run (`claude`; on NixOS it needs [nix-ld], as the npm package ships a native binary)
+- [gstack], installed into the project's `.claude/skills/` the first time you enter the shell or start a Claude Code session there, then kept up to date by gstack's own auto-update
+- [Bun], [Node.js][node], [Git] and, on Linux, the Chromium gstack's browser skills drive
+
+Everything gstack writes stays in the project and out of git (`.claude/skills/`, `.claude/settings.local.json`, `.gstack/`). The committed `.claude/settings.json` installs gstack from a SessionStart hook, so Claude Code sessions that don't use the dev shell, such as cloud agents, get it too. In a [Claude Code cloud environment][claude-cloud], running `nix run .#gstack-bootstrap` from the environment's setup script installs it before the session starts.
 
 ### [`hashi`](./hashi/)
 
@@ -364,6 +373,8 @@ A dev template that's fully customizable.
 [cargo-deny]: https://crates.io/crates/cargo-deny
 [cargo-edit]: https://crates.io/crates/cargo-edit
 [clang-tools]: https://clang.llvm.org
+[claude code]: https://code.claude.com
+[claude-cloud]: https://code.claude.com/docs/en/claude-code-on-the-web
 [clippy]: https://github.com/rust-lang/rust-clippy
 [clojure]: https://clojure.org
 [cmake]: https://cmake.org
@@ -395,12 +406,14 @@ A dev template that's fully customizable.
 [elm2nix]: https://github.com/cachix/elm2nix
 [gdb]: https://gnu.org/software/gdb
 [gigalixir]: https://gigalixir.com
+[git]: https://git-scm.com
 [gleam]: https://gleam.run
 [go]: https://go.dev
 [godoc]: https://pkg.go.dev/golang.org/x/tools/cmd/godoc
 [goimports]: https://pkg.go.dev/golang.org/x/tools/cmd/goimports
 [golangci-lint]: https://github.com/golangci/golangci-lint
 [gradle]: https://gradle.org
+[gstack]: https://github.com/garrytan/gstack
 [gtest]: https://github.com/google/googletest
 [hashicorp]: https://hashicorp.com
 [haskell]: https://haskell.org
@@ -430,6 +443,7 @@ A dev template that's fully customizable.
 [nimble]: https://github.com/nim-lang/nimble
 [niv]: https://github.com/nmattia/niv
 [nix]: https://nixos.org
+[nix-ld]: https://github.com/nix-community/nix-ld
 [nixfmt]: https://github.com/serokell/nixfmt
 [nix-direnv]: https://github.com/nix-community/nix-direnv
 [node]: https://nodejs.org
