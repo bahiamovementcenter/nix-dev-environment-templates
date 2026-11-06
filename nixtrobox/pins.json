@@ -1,0 +1,38 @@
+{
+  "archlinux": {
+    "x86_64-linux": {
+      "hash": "sha256-/ld2wO2HyDjKTDwtIET7WOm5gYn7rf6Y5x+Ckb7stn8=",
+      "imageDigest": "sha256:b1c2fe6e717bfd5673af8fc217e1e1c3ce0dcbb1d53c3414c8425e7ce79fc6d9"
+    }
+  },
+  "debian": {
+    "aarch64-linux": {
+      "hash": "sha256-kAkFx0A3f4wVHf5UDfB33Ae7unKZgGW4bV2IaVeCDpA=",
+      "imageDigest": "sha256:9c6e381421d0f48d1b8133e573f33c185ee16cbf505eda9c4a8a4791b25ea8a6"
+    },
+    "x86_64-linux": {
+      "hash": "sha256-qQRmE5/o56laL0AYTj46Yql0kwatuGRYC25M/LQKEj4=",
+      "imageDigest": "sha256:9c6e381421d0f48d1b8133e573f33c185ee16cbf505eda9c4a8a4791b25ea8a6"
+    }
+  },
+  "fedora": {
+    "aarch64-linux": {
+      "hash": "sha256-rSgefx2mHWweauY3CQtQX12MCZJ1q2gDn9qdpvxRmq4=",
+      "imageDigest": "sha256:2658987140d6799d00ee4a07b6b92a3ddf72f1a7960d79f3547002be2691b236"
+    },
+    "x86_64-linux": {
+      "hash": "sha256-TQNeT4EQlTSXwSPPDjsNH3Q2r5GgDuS2fkhBfIT1NX8=",
+      "imageDigest": "sha256:2658987140d6799d00ee4a07b6b92a3ddf72f1a7960d79f3547002be2691b236"
+    }
+  },
+  "ubuntu": {
+    "aarch64-linux": {
+      "hash": "sha256-Of6wGVre3zGSw7OWP1HOwkPYQE22AX7maDukVGa147E=",
+      "imageDigest": "sha256:fe81560990fae86dc4743202b2cb4d3df98d0bcf949173cecef15ce1127ef852"
+    },
+    "x86_64-linux": {
+      "hash": "sha256-UPqgL5ASxnFKZwb0Ct/pb++pyNCDMOfp+oGdPT9Apq0=",
+      "imageDigest": "sha256:fe81560990fae86dc4743202b2cb4d3df98d0bcf949173cecef15ce1127ef852"
+    }
+  }
+}

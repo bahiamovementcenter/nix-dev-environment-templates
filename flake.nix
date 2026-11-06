@@ -187,6 +187,11 @@
             description = "Go (Golang) development environment";
           };
 
+          gstack = {
+            path = ./gstack;
+            description = "Claude Code with gstack, installed per project";
+          };
+
           hashi = {
             path = ./hashi;
             description = "HashiCorp DevOps tools development environment";
@@ -240,6 +245,11 @@
           nix = {
             path = ./nix;
             description = "Nix development environment";
+          };
+
+          nixtrobox = {
+            path = ./nixtrobox;
+            description = "Distrobox containers of other Linux distributions, pinned with Nix";
           };
 
           node = {

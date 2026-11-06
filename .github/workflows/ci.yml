@@ -57,7 +57,6 @@ jobs:
         env:
           EVENT: ${{ github.event_name }}
           REF_TYPE: ${{ github.ref_type }}
-          PR_BASE: ${{ github.event.pull_request.base.sha }}
           PUSH_BEFORE: ${{ github.event.before }}
           REQUESTED: ${{ inputs.templates }}
         run: |
@@ -91,7 +90,10 @@ jobs:
           elif [ "$EVENT" = schedule ] || [ "$EVENT" = workflow_dispatch ] || [ "$REF_TYPE" = tag ]; then
             templates="$(all_templates)"
           elif [ "$EVENT" = pull_request ]; then
-            templates="$(changed_templates "$PR_BASE...HEAD")"
+            # A pull request is checked out merged into the current base
+            # branch, its first parent. The event's base SHA can be older
+            # than that, which would count changes already on main.
+            templates="$(changed_templates "HEAD^1..HEAD")"
           elif [ -n "$PUSH_BEFORE" ] && git cat-file -e "$PUSH_BEFORE^{commit}" 2>/dev/null; then
             templates="$(changed_templates "$PUSH_BEFORE..HEAD")"
           else
