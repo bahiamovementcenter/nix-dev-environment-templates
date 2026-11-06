@@ -15,7 +15,7 @@ in
 
 # Converts a JSON schema into a Nickel contract. Not in Nixpkgs, so it's built
 # from a pinned commit, as in the nickel template
-let json-schema-to-nickel =
+let json_schema_to_nickel =
   organist.nix.derivation.CallNix
   & {
     function = m%"
@@ -55,7 +55,7 @@ organist.OrganistExpression
           nickel = organist.import_nix "nixpkgs#nickel",
           nixfmt = organist.import_nix "nixpkgs#nixfmt",
         }
-        & { json-schema-to-nickel = json-schema-to-nickel },
+        & { json-schema-to-nickel = json_schema_to_nickel },
     },
   },
 }
