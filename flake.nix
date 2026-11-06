@@ -182,6 +182,11 @@
             description = "Go (Golang) development environment";
           };
 
+          gstack = {
+            path = ./gstack;
+            description = "Claude Code with gstack, installed per project";
+          };
+
           hashi = {
             path = ./hashi;
             description = "HashiCorp DevOps tools development environment";

@@ -1,0 +1,6 @@
+.direnv/
+
+# gstack, installed on each machine by gstack-bootstrap (see flake.nix)
+.claude/skills/
+.claude/settings.local.json*
+.gstack/
