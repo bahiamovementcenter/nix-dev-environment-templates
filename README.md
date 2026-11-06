@@ -203,6 +203,7 @@ Everything gstack writes stays in the project and out of git (`.claude/skills/`,
 
 - [jd][jd-cli], the official Johnny.Decimal command-line tool
 - [jdd]
+- [wattlebird-generator]: `wattlebird-generate` writes a messy fictional business for an agent to file, and `wattlebird-score` scores the result (the answer key goes to `~/.local/state/wattlebird-generator`, out of the agent's reach)
 
 ### [`jupyter`](./jupyter/)
 
@@ -500,6 +501,7 @@ Everything gstack writes stays in the project and out of git (`.claude/skills/`,
 [vcpkg]: https://vcpkg.io
 [vcpkg-tool]: https://github.com/microsoft/vcpkg-tool
 [vulnix]: https://github.com/flyingcircusio/vulnix
+[wattlebird-generator]: https://github.com/johnnydecimal/wattlebird-generator
 [yarn]: https://yarnpkg.com
 [vlang]: https://vlang.io
 [zig]: https://ziglang.org
