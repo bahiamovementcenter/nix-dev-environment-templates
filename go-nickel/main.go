@@ -34,7 +34,7 @@ func loadConfig(path string) (*Config, error) {
 	if err := os.Chdir(filepath.Dir(path)); err != nil {
 		return nil, err
 	}
-	defer os.Chdir(wd)
+	defer func() { _ = os.Chdir(wd) }()
 
 	expr, err := nickel.NewContext().EvalDeep(string(src))
 	if err != nil {

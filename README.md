@@ -261,13 +261,12 @@ A dev template that's fully customizable.
 - A small example app that evaluates `config.ncl`, checked by the contract in `schema.ncl`, into a Go struct with [go-nickel]:
 
   ```shell
-  go mod tidy
   go build -o go-nickel-example . && ./go-nickel-example
   ```
 
   A value that breaks the contract (try `port = 99999`) stops the app with Nickel's error, pointing at the value.
 
-go-nickel links Nickel's interpreter, which it ships as static libraries for `x86_64-linux`, `aarch64-linux`, `aarch64-darwin` and Windows, into the binary through cgo. Binaries are self-contained but larger (about 16 MB for the example), and need cgo (`CGO_ENABLED=1`, set in the shell) to build. go-nickel evaluates source text, and Nickel resolves `import`s from the current directory, so the example evaluates from the config file's directory. go-nickel has no releases yet; `go mod tidy` pins the latest commit.
+go-nickel links Nickel's interpreter, which it ships as static libraries for `x86_64-linux`, `aarch64-linux`, `aarch64-darwin` and Windows, into the binary through cgo. Binaries are self-contained but larger (about 16 MB for the example), and need cgo (`CGO_ENABLED=1`, set in the shell) to build. go-nickel evaluates source text, and Nickel resolves `import`s from the current directory, so the example evaluates from the config file's directory. go-nickel has no releases yet, so `go.mod` pins a commit; `go get github.com/nickel-lang/go-nickel@main` moves it to the latest.
 
 ### [`gstack`](./gstack/)
 

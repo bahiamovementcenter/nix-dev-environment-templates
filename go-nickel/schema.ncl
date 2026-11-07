@@ -8,5 +8,6 @@ let Port = std.contract.from_predicate (fun p => std.is_number p && p > 0 && p <
   greetings
     | { _ : String }
     | doc "A greeting for each language code, served at /<code>"
-    | default = { en = "Hello" },
+    | default
+    = { en = "Hello" },
 }
