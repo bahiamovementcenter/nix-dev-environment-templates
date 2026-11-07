@@ -264,6 +264,11 @@
             description = "Go (Golang) development environment";
           };
 
+          go-nickel = {
+            path = ./go-nickel;
+            description = "Go development environment for apps configured in Nickel, with go-nickel";
+          };
+
           gstack = {
             path = ./gstack;
             description = "Claude Code with gstack, installed per project";

@@ -51,6 +51,7 @@ Once your preferred template has been initialized, you can use the provided shel
 | Empty (change at will)   | [`empty`](./empty)            |
 | [Gleam]                  | [`gleam`](./gleam/)           |
 | [Go]                     | [`go`](./go/)                 |
+| [Go] configured in [Nickel] | [`go-nickel`](./go-nickel/) |
 | [gstack] for [Claude Code] | [`gstack`](./gstack/)    |
 | [Hashicorp] tools        | [`hashi`](./hashi/)           |
 | [Haskell]                | [`haskell`](./haskell/)       |
@@ -252,6 +253,21 @@ A dev template that's fully customizable.
 - [Go]
 - Standard Go tools ([goimports], [godoc], and others)
 - [golangci-lint]
+
+### [`go-nickel`](./go-nickel/)
+
+- [Go], [goimports], [godoc] and [golangci-lint], as in [`go`](#go), plus a C compiler for cgo
+- [Nickel] and [nls], for writing the configuration
+- A small example app that evaluates `config.ncl`, checked by the contract in `schema.ncl`, into a Go struct with [go-nickel]:
+
+  ```shell
+  go mod tidy
+  go build -o go-nickel-example . && ./go-nickel-example
+  ```
+
+  A value that breaks the contract (try `port = 99999`) stops the app with Nickel's error, pointing at the value.
+
+go-nickel links Nickel's interpreter, which it ships as static libraries for `x86_64-linux`, `aarch64-linux`, `aarch64-darwin` and Windows, into the binary through cgo. Binaries are self-contained but larger (about 16 MB for the example), and need cgo (`CGO_ENABLED=1`, set in the shell) to build. go-nickel evaluates source text, and Nickel resolves `import`s from the current directory, so the example evaluates from the config file's directory. go-nickel has no releases yet; `go mod tidy` pins the latest commit.
 
 ### [`gstack`](./gstack/)
 
@@ -533,6 +549,7 @@ Everything gstack writes stays in the project and out of git (`.claude/skills/`,
 [git]: https://git-scm.com
 [gleam]: https://gleam.run
 [go]: https://go.dev
+[go-nickel]: https://github.com/nickel-lang/go-nickel
 [godoc]: https://pkg.go.dev/golang.org/x/tools/cmd/godoc
 [goimports]: https://pkg.go.dev/golang.org/x/tools/cmd/goimports
 [golangci-lint]: https://github.com/golangci/golangci-lint
