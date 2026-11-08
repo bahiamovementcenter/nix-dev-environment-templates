@@ -20,63 +20,89 @@
             inherit system;
             pkgs = import inputs.nixpkgs {
               inherit system;
+              overlays = [ self.overlays.default ];
             };
           }
         );
     in
     {
+      # `pkgs.jd` for other flakes; `pkgs.jd.withExtensions ./dir` adds extensions
+      overlays.default = final: prev: { jd = final.callPackage ./jd.nix { }; };
+
+      packages = forEachSupportedSystem (
+        { pkgs, ... }:
+        {
+          # jd with the extensions in ./extensions
+          default = pkgs.jd.withExtensions ./extensions;
+          inherit (pkgs) jd;
+
+          # Facts about the pinned jd, as Nickel (see nickel/generate.nu)
+          generated = pkgs.runCommand "jd-generated" { nativeBuildInputs = [ pkgs.nushell ]; } ''
+            nu ${./nickel/generate.nu} ${pkgs.jd.src} $out ${pkgs.jd.version} \
+              ${pkgs.jd.upstream.owner} ${pkgs.jd.upstream.repo} ${pkgs.jd.upstream.rev}
+          '';
+        }
+      );
+
+      # `nix run .#generate` rewrites nickel/generated/ after you change jd.nix
+      apps = forEachSupportedSystem (
+        { pkgs, system }:
+        {
+          generate = {
+            type = "app";
+            program = pkgs.lib.getExe (
+              pkgs.writeShellScriptBin "generate" ''
+                rm -rf nickel/generated
+                cp -r --no-preserve=mode ${self.packages.${system}.generated} nickel/generated
+              ''
+            );
+          };
+        }
+      );
+
+      checks = forEachSupportedSystem (
+        { pkgs, system }:
+        {
+          generated = pkgs.runCommand "jd-generated-is-current" { } ''
+            diff -r ${self.packages.${system}.generated} ${./nickel/generated} \
+              || { echo 'nickel/generated/ is out of date: run nix run .#generate' >&2; exit 1; }
+            touch $out
+          '';
+
+          # Runs nu/test.nu on a copy of this template
+          system =
+            pkgs.runCommand "jd-system-test"
+              {
+                nativeBuildInputs = [
+                  self.packages.${system}.default
+                  pkgs.nickel
+                  pkgs.nushell
+                  pkgs.git
+                ];
+              }
+              ''
+                export HOME=$TMPDIR
+                cp -r --no-preserve=mode ${./.} work && cd work
+                nu nu/test.nu
+                touch $out
+              '';
+        }
+      );
+
       devShells = forEachSupportedSystem (
         { pkgs, system }:
-        let
-          # The official Johnny.Decimal command-line tool (jd). It isn't packaged
-          # in Nixpkgs, so it's fetched at a pinned revision and wrapped so that
-          # jq is always on its PATH.
-          jd = pkgs.stdenvNoCC.mkDerivation {
-            pname = "jd";
-            version = "4.4.0";
-
-            src = pkgs.fetchFromGitHub {
-              owner = "johnnydecimal";
-              repo = "cli.johnnydecimal.com";
-              rev = "863d2e6412b70c385db8bdbcd6e1b3e28e6048f4";
-              hash = "sha256-jM0nlEJACeE+5Ojluwpd4Hwkfyvn1Ppnzhqc85PFqtA=";
-            };
-
-            nativeBuildInputs = [ pkgs.makeWrapper ];
-
-            dontBuild = true;
-
-            installPhase = ''
-              runHook preInstall
-
-              mkdir -p $out/share/johnnydecimal $out/bin
-              cp -r . $out/share/johnnydecimal/cli
-
-              makeWrapper $out/share/johnnydecimal/cli/bin/jd $out/bin/jd \
-                --prefix PATH : ${pkgs.lib.makeBinPath [ pkgs.jq ]}
-
-              runHook postInstall
-            '';
-
-            meta = {
-              description = "The Johnny.Decimal command-line tool";
-              homepage = "https://github.com/johnnydecimal/cli.johnnydecimal.com";
-              license = pkgs.lib.licenses.mit;
-              mainProgram = "jd";
-            };
-          };
-        in
         {
           default = pkgs.mkShellNoCC {
             packages = [
-              jd # Johnny.Decimal CLI: find, create and move IDs
+              self.packages.${system}.default # jd: find, create and move IDs
               pkgs.jdd # Johnny Decimal daemon: files new documents into the right folder by name
+              pkgs.nickel # evaluates system.ncl
+              pkgs.nushell # nu/jd.nu: `use nu/jd.nu` in nu
               self.formatter.${system}
             ];
 
             # jd reads its config from JD_CONFIG, and jdd from the JDD_* variables.
-            # The config file isn't included: create it with `jd agent-setup` or
-            # by copying the example (`jd paths` shows where the files live).
+            # Write the config from system.ncl with `jd write-config` in nu.
             env = {
               JDD_LOG_LEVEL = "info";
             };

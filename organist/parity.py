@@ -12,6 +12,9 @@ actually gets:
    after removing the ones that only reflect how the shell is built.
 3. Smoke tests: the commands listed in parity.json are run in both shells, in
    the same scratch directory, and their exit codes and output must match.
+4. Shared files: the files listed under "shared_files" in parity.json must be
+   identical in both templates (each template is copied on its own by
+   `nix flake init`, so they can't share them).
 
 Differences that are intended are listed per template in parity.json.
 
@@ -102,6 +105,7 @@ def default_nixpkgs():
 class Side:
     def __init__(self, label, directory, extra_args):
         self.label = label
+        self.directory = directory
         self.ref = f"path:{directory}"
         self.extra = extra_args
 
@@ -233,6 +237,24 @@ def compare_envs(orig, port, allowed_extra, allowed_replacements, allowed_vars):
     return failures, notes
 
 
+def compare_shared(orig_dir, port_dir, paths):
+    """Each listed file, or every file under a listed folder, must be identical."""
+    failures = []
+    for rel in paths:
+        a, b = orig_dir / rel, port_dir / rel
+        if not a.exists() or not b.exists():
+            failures.append(f"shared `{rel}` is missing from the {'original' if not a.exists() else 'organist'} template")
+            continue
+        files_a = {p.relative_to(a) for p in a.rglob("*") if p.is_file()} if a.is_dir() else {Path()}
+        files_b = {p.relative_to(b) for p in b.rglob("*") if p.is_file()} if b.is_dir() else {Path()}
+        for f in sorted(files_a ^ files_b):
+            failures.append(f"shared `{rel / f}` is only in the {'original' if f in files_a else 'organist'} template")
+        for f in sorted(files_a & files_b):
+            if (a / f).read_bytes() != (b / f).read_bytes():
+                failures.append(f"shared `{rel / f}` differs between the templates")
+    return failures
+
+
 SMOKE_MARK = "@@parity"
 
 
@@ -317,6 +339,7 @@ def main():
             if not args.no_smoke:
                 with tempfile.TemporaryDirectory(prefix="parity-") as scratch:
                     failures += run_smoke(orig, port, spec.get("smoke", []), Path(scratch))
+            failures += compare_shared(orig.directory, port.directory, spec.get("shared_files", []))
         except RuntimeError as err:
             failures, notes = [str(err)], []
         for note in notes:

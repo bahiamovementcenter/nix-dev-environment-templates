@@ -37,6 +37,26 @@
         "command -v git node inotifywait gigalixir notify-send | xargs -n 1 basename",
         "echo \"CC=${CC:-unset}\""
       ]
+    },
+    "johnny-decimal": {
+      "original": "johnny-decimal",
+      "smoke": [
+        "jd version",
+        "nickel --version",
+        "nu --version",
+        "ls \"$(dirname \"$(readlink -f \"$(command -v jd)\")\")/../share/johnnydecimal/cli/lib/ext\"",
+        "echo \"JD_CONFIG=$JD_CONFIG JDD_ROOT=$JDD_ROOT JDD_LOG_LEVEL=$JDD_LOG_LEVEL\"",
+        "echo \"CC=${CC:-unset}\""
+      ],
+      "shared_files": [
+        "jd.nix",
+        "jd-ext.sh",
+        "system.ncl",
+        "extensions",
+        "nickel/johnny-decimal.ncl",
+        "nickel/generated",
+        "nu"
+      ]
     }
   }
 }

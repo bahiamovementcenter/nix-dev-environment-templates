@@ -263,6 +263,11 @@
             description = "Java development environment, defined with Organist";
           };
 
+          organist-johnny-decimal = {
+            path = ./organist/johnny-decimal;
+            description = "Johnny Decimal development environment, defined with Organist";
+          };
+
           organist-nickel = {
             path = ./organist/nickel;
             description = "Nickel development environment, defined with Organist";

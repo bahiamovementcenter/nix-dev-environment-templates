@@ -86,12 +86,13 @@ Once your preferred template has been initialized, you can use the provided shel
 
 ## Organist templates
 
-The [`organist`](./organist/) directory has versions of four templates defined with [Organist], which describes the development shell in [Nickel] (`project.ncl`) instead of Nix:
+The [`organist`](./organist/) directory has versions of five templates defined with [Organist], which describes the development shell in [Nickel] (`project.ncl`) instead of Nix:
 
 | Language/framework/tool | Template                                     | Ported from               |
 | :---------------------- | :------------------------------------------- | :------------------------ |
 | [Elixir]                | [`organist-elixir`](./organist/elixir/)      | [`elixir`](./elixir/)     |
 | [Java]                  | [`organist-java`](./organist/java/)          | [`java`](./java/)         |
+| [Johnny Decimal][jd]    | [`organist-johnny-decimal`](./organist/johnny-decimal/) | [`johnny-decimal`](./johnny-decimal/) |
 | [Nickel]                | [`organist-nickel`](./organist/nickel/)      | [`nickel`](./nickel/)     |
 | [Python]                | [`organist-python`](./organist/python/)      | [`python`](./python/)     |
 
@@ -104,7 +105,7 @@ nix develop --command check-organist          # all templates
 nix develop --command check-organist java     # just one
 ```
 
-It evaluates both shells against the Nixpkgs revision locked in this repo's `flake.lock` and compares which package provides each command, the shell's variables and functions, and the output of a few commands run in both shells. The commands, and any intended differences, are listed in [`organist/parity.json`](./organist/parity.json).
+It evaluates both shells against the Nixpkgs revision locked in this repo's `flake.lock` and compares which package provides each command, the shell's variables and functions, and the output of a few commands run in both shells. The commands, and any intended differences, are listed in [`organist/parity.json`](./organist/parity.json). Files a template shares with its original (like `organist/johnny-decimal`'s `jd.nix`, `nickel/` and `nu/`) are listed there too, and must stay identical: edit them in the original and copy them over.
 
 ## Template contents
 
@@ -213,8 +214,34 @@ A dev template that's fully customizable.
 
 ### [`johnny-decimal`](./johnny-decimal/)
 
-- [jd][jd-cli], the official Johnny.Decimal command-line tool
+- [jd][jd-cli], the official Johnny.Decimal command-line tool, built by
+  `jd.nix` with the extensions in `extensions/`
 - [jdd]
+- [Nickel] and [Nushell]
+
+It comes in layers, each usable without the ones after it:
+
+1. **Your system in Nickel.** `system.ncl` declares your systems, areas,
+   categories and IDs, and your extensions. The contracts in
+   `nickel/johnny-decimal.ncl` check them against the Johnny.Decimal rules
+   (areas like `10-19`, categories inside their area, `.06`–`.08` left free)
+   and add the standard zeros. `nickel/generated/` holds facts read from the
+   pinned jd: its functions, commands and adapter interface. Regenerate it
+   with `nix run .#generate` after changing jd's revision in `jd.nix`; `nix
+   flake check` fails while it's out of date.
+2. **A Nushell front end.** In `nu`, `use nu/jd.nu` gives `jd` (which can
+   change into folders), `jd ids`, and the commands that work from
+   `system.ncl`: `jd project`, `jd write-config`, `jd scaffold` (creates what's
+   missing, never deletes) and `jd check` (compares it with the disk and with
+   `extensions/`).
+3. **Extensions inside jd.** Every `extensions/*.sh` is loaded by jd before it
+   runs a command: `jd_wrap` wraps one of jd's functions and `jd_command` adds a
+   command (see `jd-ext.sh` and the two examples). Work-package adapters go in
+   `extensions/adapters/{tasks,notes}/`. Other flakes can use the overlay:
+   `pkgs.jd.withExtensions ./dir`. Files must be tracked by git for the flake
+   to see them.
+
+`nix flake check` runs `nu/test.nu`, which tests the three together.
 
 ### [`jupyter`](./jupyter/)
 
@@ -459,6 +486,7 @@ A dev template that's fully customizable.
 [node2nix]: https://github.com/svanderburg/node2nix
 [nomad]: https://nomadproject.io
 [nomad-autoscaler]: https://github.com/hashicorp/nomad-autoscaler
+[nushell]: https://www.nushell.sh
 [nomad-pack]: https://github.com/hashicorp/nomad-pack
 [npm]: https://npmjs.org
 [ocaml]: https://ocaml.org
