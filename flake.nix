@@ -434,6 +434,11 @@
             description = "Rust development environment";
           };
 
+          rust-wasm-nickel = {
+            path = ./rust-wasm-nickel;
+            description = "Rust development environment for WebAssembly apps configured in Nickel, with nickel-embed";
+          };
+
           scala = {
             path = ./scala;
             description = "Scala development environment";

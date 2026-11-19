@@ -1,0 +1,11 @@
+[package]
+name = "rust-wasm-nickel-example"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+# nickel-embed has no releases yet and breaks with nickel-lang-core's minor
+# releases, so it is pinned to a commit; bump `rev` deliberately.
+nickel-embed = { git = "https://github.com/costacombat/rust-nickel", rev = "3a225ba18c235dfdcf738460438a23f8db8381bd" }
+serde = { version = "1", features = ["derive"] }

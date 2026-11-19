@@ -1,0 +1,4 @@
+# `cargo run` and `cargo test` for WASI run the module under wasmtime, with the
+# current directory shared so the program can read its Nickel files.
+[target.wasm32-wasip2]
+runner = "wasmtime run --dir ."
