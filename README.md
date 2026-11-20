@@ -80,6 +80,7 @@ Once your preferred template has been initialized, you can use the provided shel
 | [R]                      | [`r`](./r/)                   |
 | [Ruby]                   | [`ruby`](./ruby/)             |
 | [Rust]                   | [`rust`](./rust/)             |
+| [Rust] for [WebAssembly], configured in [Nickel] | [`rust-wasm-nickel`](./rust-wasm-nickel/) |
 | [Scala]                  | [`scala`](./scala/)           |
 | Shell                    | [`shell`](./shell/)           |
 | [SWI-prolog]             | [`swi-prolog`](./swi-prolog/) |
@@ -461,6 +462,22 @@ Everything gstack writes stays in the project and out of git (`.claude/skills/`,
 - [cargo-edit]
 - [cargo-deny]
 
+### [`rust-wasm-nickel`](./rust-wasm-nickel/)
+
+- [Rust] from [fenix], with [cargo], [Clippy], [rust-analyzer] and [cargo-deny], plus the standard library for `wasm32-unknown-unknown` (browsers, Cloudflare Workers) and `wasm32-wasip2` (WASI hosts)
+- [wasmtime], [wasm-tools] and [wasm-bindgen-cli], to run, inspect and bind WebAssembly
+- [Nickel] and [nls], for writing the configuration, and [Typst] for documents rendered from the app's data
+- A small example app that evaluates `config.ncl`, checked by the contract in `schema.ncl`, into a Rust struct with [nickel-embed], natively or as WebAssembly:
+
+  ```shell
+  cargo run
+  cargo run --target wasm32-wasip2   # runs under wasmtime (.cargo/config.toml)
+  ```
+
+  A value that breaks the contract (try `port = 99999`) stops the app with Nickel's error, pointing at the value.
+
+nickel-embed is pure Rust, so unlike [`go-nickel`](#go-nickel) the interpreter compiles to WebAssembly with the app; the WASI build reads its Nickel files through the directory wasmtime shares (`--dir .`). nickel-embed has no releases yet, so `Cargo.toml` pins a commit.
+
 ### [`scala`](./scala/)
 
 - [Scala] (plus [Java])
@@ -543,6 +560,7 @@ Everything gstack writes stays in the project and out of git (`.claude/skills/`,
 [elixir]: https://elixir-lang.org
 [elm]: https://elm-lang.org
 [elm2nix]: https://github.com/cachix/elm2nix
+[fenix]: https://github.com/nix-community/fenix
 [gdb]: https://gnu.org/software/gdb
 [gigalixir]: https://gigalixir.com
 [git]: https://git-scm.com
@@ -583,6 +601,7 @@ Everything gstack writes stays in the project and out of git (`.claude/skills/`,
 [mix]: https://elixir-lang.org/getting-started/mix-otp/introduction-to-mix.html
 [nh]: https://github.com/nix-community/nh
 [nickel]: https://nickel-lang.org
+[nickel-embed]: https://github.com/costacombat/rust-nickel
 [nim]: https://nim-lang.org
 [nimble]: https://github.com/nim-lang/nimble
 [niv]: https://github.com/nmattia/niv
@@ -644,7 +663,11 @@ Everything gstack writes stays in the project and out of git (`.claude/skills/`,
 [vcpkg]: https://vcpkg.io
 [vcpkg-tool]: https://github.com/microsoft/vcpkg-tool
 [vulnix]: https://github.com/flyingcircusio/vulnix
+[wasm-bindgen-cli]: https://github.com/wasm-bindgen/wasm-bindgen
+[wasm-tools]: https://github.com/bytecodealliance/wasm-tools
+[wasmtime]: https://wasmtime.dev
 [wattlebird-generator]: https://github.com/johnnydecimal/wattlebird-generator
+[webassembly]: https://webassembly.org
 [yarn]: https://yarnpkg.com
 [vlang]: https://vlang.io
 [zig]: https://ziglang.org
